@@ -30,6 +30,47 @@ variables_factor <- c(
   "T03_MAT_logement"
 )
 
+
+#Liste des variables_factor Repro :   
+c("CODE_ELEVAGE",
+"X01x1_UTH_class",
+"X01x1_SAU_class",
+"X02x1_NBANDE_class",
+"X02x1_INTERVBD_class",
+"X02x1_NBDPS_class",
+"X03x1_UTH_PORC_class",
+"Zone",
+"T03_MAT_logement")
+
+
+#Liste des variables_factor NE :   
+c("CODE_ELEVAGE",
+  "X01x1_UTH_class",
+  "X01x1_SAU_class",
+  "X02x1_NBANDE_class",
+  "X02x1_INTERVBD_class",
+  "X02x1_NBDPS_class",
+  "X03x1_UTH_PORC_class",
+  "Zone",
+  "T03_MAT_logement",
+  "X02x1_NBDENG_class",
+  "A03_PosSeroMyAs")
+
+#Liste des variables_factor PC :   
+c("CODE_ELEVAGE",
+  "type_elevage",
+  "X01x1_UTH_class",
+  "X01x1_SAU_class",
+  "X02x1_NBANDE_class",
+  "X02x1_INTERVBD_class",
+  "X02x1_NBDPS_class",
+  "X03x1_UTH_PORC_class",
+  "X02x1_TYPE_ELEVAGE_NEW",
+  "Zone",
+  "X02x1_NBDENG_class",
+  "A03_PosSeroMyAs")
+
+
 # Convertissez les colonnes spécifiées en facteur
 Data <- Data %>%
   mutate(across(all_of(variables_factor), as.factor))
@@ -111,15 +152,15 @@ for (var in names(Data_Mode)){
 ### Etape Finale
 #################################################################
 
-Data_Verif <- Data[, -which(names(Data) %in% variable_a_supprimer)]
+Data_filtre <- Data[, -which(names(Data) %in% variable_a_supprimer)]
 
 print(paste('Nombre de variables supprimées :',length(variable_a_supprimer)))
 
 #################################################################
-###   A suivre ...
+###   A suivre ... (exporter en R Data)
 #################################################################
 
-Data_Verif
+Data_filtre
 
 
 
