@@ -8,7 +8,7 @@ library(dplyr)
 
 ## CHARGEMENT DES DONNEES ##
 
-Data <- read_excel("~/PROJET STAT 2A/R/base_Repro_X_varY_BEA.xlsx")
+Data <- read_excel("~/PROJET STAT 2A/R/base_PC_X_varY_BEA.xlsx")
 
 
 #################################################################
@@ -18,7 +18,7 @@ Data <- read_excel("~/PROJET STAT 2A/R/base_Repro_X_varY_BEA.xlsx")
 str(Data)
 
 # Liste des variables à conserver en tant que facteur
-variables_factor <- c(
+ c(
   "CODE_ELEVAGE",
   "X01x1_UTH_class",
   "X01x1_SAU_class",
@@ -44,7 +44,7 @@ c("CODE_ELEVAGE",
 
 
 #Liste des variables_factor NE :   
-c("CODE_ELEVAGE",
+ c("CODE_ELEVAGE",
   "X01x1_UTH_class",
   "X01x1_SAU_class",
   "X02x1_NBANDE_class",
@@ -57,7 +57,7 @@ c("CODE_ELEVAGE",
   "A03_PosSeroMyAs")
 
 #Liste des variables_factor PC :   
-c("CODE_ELEVAGE",
+ variables_factor <- c("CODE_ELEVAGE",
   "type_elevage",
   "X01x1_UTH_class",
   "X01x1_SAU_class",
@@ -152,7 +152,7 @@ for (var in names(Data_Mode)){
 ### Etape Finale
 #################################################################
 
-Data_filtre <- Data[, -which(names(Data) %in% variable_a_supprimer)]
+Data_PC <- Data[, -which(names(Data) %in% variable_a_supprimer)]
 
 print(paste('Nombre de variables supprimées :',length(variable_a_supprimer)))
 
@@ -160,7 +160,15 @@ print(paste('Nombre de variables supprimées :',length(variable_a_supprimer)))
 ###   A suivre ... (exporter en R Data)
 #################################################################
 
-Data_filtre
+Data_PC
+
+
+rm(list = c("Data_Mode","Data", "col", 
+            "Data_NA", "var", "variable_a_supprimer",
+            "variables_factor"))
+
+
+
 
 
 
