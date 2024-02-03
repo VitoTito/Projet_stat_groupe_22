@@ -29,6 +29,10 @@ base_NE_BEA[, colonnes_caracteres] <- lapply(base_NE_BEA[, colonnes_caracteres],
 
 base_NE_BEA$CODE_ELEVAGE <- as.character(base_NE_BEA$CODE_ELEVAGE)
 
+#Mettre en facteur y13_BEA_NE
+
+base_NE_BEA$y13_BEA_NE <- as.factor(base_NE_BEA$y13_BEA_NE)
+
 # str(base_NE_BEA, list.len =ncol(base_NE_BEA))
 
 # 1.2 #
@@ -80,4 +84,91 @@ variables_a_potent_regrouper <- names(occurrences2)[sapply(occurrences2, functio
 
 # Donner les variables à supprimer et les variables où y aura potentiellement des regroupements
 
+rm(occurrences, occurrences2, colonnes_caracteres)
+
 #### Etape 2 ####
+
+#2.1 Test chi-deux variable catégorielle
+
+variable_cible <- base_facteurs$y13_BEA_NE
+autres_variables <- base_facteurs[, -1]
+variables_significatives_p <- list()
+
+# Effectuez le test du chi-deux pour chaque variable 
+for (i in seq_along(autres_variables)) {
+  variable = autres_variables[[i]]
+  chi_squared_result <- chisq.test(table(variable_cible, variable))
+  # Vérifiez si la p-valeur est inférieure à 0.2
+  if (chi_squared_result$p.value < 0.2) {
+    variables_significatives_p[[names(autres_variables)[i]]] <- chi_squared_result$p.value
+  }
+}
+
+variables_sign_fact <- names(variables_significatives_p)
+
+#2.2 Test chi-deux exact variable catégorielle
+
+variables_significatives_exact_p <- list()
+
+# Effectuez le test du chi-deux exact pour chaque variable 
+for (i in seq_along(autres_variables)) {
+  variable = autres_variables[[i]]
+  chi_squared_result_exact <- chisq.test(table(variable_cible, variable), simulate.p.value = TRUE)
+  # Vérifiez si la p-valeur est inférieure à 0.2
+  if (chi_squared_result_exact$p.value < 0.2) {
+    variables_significatives_exact_p[[names(autres_variables)[i]]] <- chi_squared_result_exact$p.value
+  }
+}
+
+variables_sign_fact_2 <- names(variables_significatives_exact_p)
+
+rm(variables_sign_fact_2)
+rm(variable_cible, variable, i, autres_variables, chi_squared_result, chi_squared_result_exact, variables_significatives_p, variables_significatives_exact_p)
+
+#2.3
+
+base_numeric <- base_NE_BEA %>%
+  mutate(y13_BEA_NE = as.numeric(y13_BEA_NE)) %>% 
+  select_if(is.numeric) 
+  
+## Test de student
+
+# variable_cible2 <- base_numeric$y13_BEA_NE
+# 
+# resultats_tests_moyenne <- list()
+# 
+# # Effectuez le test de comparaison de moyenne pour chaque variable numérique
+# for (nom_variable in names(base_numeric)) {
+#   if (is.numeric(base_numeric[[nom_variable]]) && nom_variable != "y13_BEA_NE") {
+#     t_test_result <- t.test(variable_cible2, base_numeric[[nom_variable]])
+#     
+#     # Vérifiez si la p-valeur est inférieure à 0.2
+#     if (t_test_result$p.value < 0.2) {
+#       resultats_tests_moyenne[[nom_variable]] <- t_test_result
+#     }
+#   }
+# }
+
+## Test Anova
+
+variable_cible2 <- base_numeric$y13_BEA_NE
+
+resultats_anova <- list()
+
+# Effectuez le test ANOVA pour chaque variable numérique
+for (nom_variable in names(base_numeric)) {
+  if (is.numeric(base_numeric[[nom_variable]]) && nom_variable != "y13_BEA_NE") {
+    anova_result <- aov(variable_cible2 ~ base_numeric[[nom_variable]])
+    
+    # Vérifiez si la p-valeur est inférieure à 0.2
+    if (summary(anova_result)[[1]][["Pr(>F)"]][1] < 0.2) {
+      resultats_anova[[nom_variable]] <- anova_result
+    }
+  }
+}
+
+variables_sign_num <- names(resultats_anova)
+
+# Resultat très différent en fonction de quel test on utilise, y a qqc de bizarre
+
+rm(resultats_anova, nom_variable, variable_cible2)
