@@ -43,14 +43,16 @@ for (i in seq_along(resultats_tableau)) {
   resultats_tableau[[i]] <- (resultats_tableau[[i]] / 92) * 100
 }
 
-resultats_tableau
+str(resultats_tableau)
 
-check_threshold <- function(table) {
-  any(table >= 85)
+for (col_name in names(resultats_tableau)) {
+  if (is.table(resultats_tableau[[col_name]])) {
+    values <- unlist(resultats_tableau[[col_name]])
+    if (any(values >= 85)) {
+      print(paste("Supprimer la variable:", col_name))
+      resultats_tableau[[col_name]] <- NULL
+    }
+  }
 }
 
-resultats_tableau <- resultats_tableau %>%
-  select(-where(~check_threshold(.)))
 
-# Afficher le résultat
-print(resultats_tableau)
