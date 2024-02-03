@@ -3,6 +3,10 @@
 library(readxl)
 library(dplyr)
 library(corrplot)
+library(vcd)
+library(FactoMineR)
+
+set.seed(3011)
 
 setwd("C:/Users/Vito/Desktop/Dépôt Projet Statistique 2A")
 
@@ -72,7 +76,7 @@ for (variable_x in toutes_les_variables) {
     if (is.factor(repro[[variable_x]])) {
       # Test du Chi² pour les variables factorielles
       contingency_table <- table(repro[[variable_x]], variable_y)
-      chi_square_test <- chisq.test(contingency_table)
+      chi_square_test <- chisq.test(contingency_table, simulate.p.value = TRUE)
       
       # Vérification de la p-value
       if (chi_square_test$p.value < 0.20) {
@@ -91,7 +95,7 @@ for (variable_x in toutes_les_variables) {
 }
 
 # Afficher les variables à conserver
-liste_var
+liste_var_etape_2 <- liste_var
 
 repro <- repro[, (names(repro) %in% c(liste_var$Variable_X, 'y12_BEA_Repro'))]
 
@@ -112,7 +116,8 @@ remplacer_na <- function(col) {
   return(col)
 }
 
-repro <- repro %>% mutate_all(remplacer_na)
+repro <- repro %>% 
+  mutate_all(remplacer_na)
 
 #### Etape 4 : Etude univariée du lien entre la variable Y et les variables X après affectation des NA #### 
 
@@ -134,7 +139,7 @@ for (variable_x in toutes_les_variables) {
     if (is.factor(repro[[variable_x]])) {
       # Test du Chi² pour les variables factorielles
       contingency_table <- table(repro[[variable_x]], variable_y)
-      chi_square_test <- chisq.test(contingency_table)
+      chi_square_test <- chisq.test(contingency_table, simulate.p.value = TRUE)
       
       # Vérification de la p-value
       if (chi_square_test$p.value < 0.20) {
@@ -153,12 +158,67 @@ for (variable_x in toutes_les_variables) {
 }
 
 # Afficher les variables à conserver
-liste_var
+liste_var_etape_4 <- liste_var
+
+setdiff(liste_var_etape_2$Variable_X, liste_var_etape_4$Variable_X)
 
 repro <- repro[, (names(repro) %in% c(liste_var$Variable_X, 'y12_BEA_Repro'))]
 
 #### Etape 5 : Etude des corrélations entre les variables X retenues à p < 0,2 ####
 
-# 1. Variables numériques
-repro
+# Récupérer le nom des variables de la table
+toutes_les_variables <- names(repro)
 
+# Initialiser une liste pour stocker les résultats
+resultats_corr <- list()
+
+# Boucle pour calculer les corrélations
+for (variable_x in toutes_les_variables) {
+  for (variable_y in toutes_les_variables) {
+    # Exclure la variable elle-même
+    if (variable_x != variable_y) {
+      # Calculer la corrélation de Pearson pour les variables numériques
+      if (is.numeric(repro[[variable_x]]) && is.numeric(repro[[variable_y]])) {
+        correlation <- cor(repro[[variable_x]], repro[[variable_y]], use = "complete.obs")
+        
+        # Vérifier la p-value
+        if (abs(correlation) > 0.05) {
+          resultats_corr[[paste(variable_x, variable_y, sep="_")]] <- list(Variable_X = variable_x, Variable_Y = variable_y, Correlation = correlation)
+        }
+      }
+      # Test du Chi² pour les variables catégorielles
+      else if (is.factor(repro[[variable_x]]) && is.factor(repro[[variable_y]])) {
+        contingency_table <- table(repro[[variable_x]], repro[[variable_y]])
+        chi_square_test <- chisq.test(contingency_table)
+        
+        # Vérifier la p-value
+        if (chi_square_test$p.value < 0.05) {
+          resultats_corr[[paste(variable_x, variable_y, sep="_")]] <- list(Variable_X = variable_x, Variable_Y = variable_y, PValue = chi_square_test$p.value)
+        }
+      }
+    }
+  }
+}
+
+# Compter les occurrences des variables
+occurrences <- table(unlist(lapply(resultats_corr, function(x) x$Variable_X)))
+sort(occurrences)
+
+quantitative_data <- repro[, sapply(repro, is.numeric)]  # Select only numeric columns
+results_acp <- PCA(quantitative_data, scale.unit = TRUE, graph = TRUE)
+
+# Nous observons des variables très fortements corrélées entre elles. On ne garde que quelques variables numériques saillantes
+
+# Préparation des données (ACM)
+# data_cat <- repro[, sapply(repro, is.factor)]  # Sélectionne les variables catégorielles
+# 
+# # Analyse
+# results_acm <- MCA(data_cat, graph = TRUE)
+# 
+# # Interpréter les résultats
+# summary(results_acm)
+# get_eigenvalue(results_acm)
+# dimdesc(results_acm)
+# plot.MCA(results_acm)
+
+repro <- repro[, c('X17x1_DELRET_rec', 'Biosec_clust_4levels')]
