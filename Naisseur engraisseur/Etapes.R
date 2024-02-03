@@ -84,9 +84,9 @@ variables_a_potent_regrouper <- names(occurrences2)[sapply(occurrences2, functio
 
 # Donner les variables à supprimer et les variables où y aura potentiellement des regroupements
 
-rm(occurrences, occurrences2, colonnes_caracteres)
+rm(occurrences, occurrences2, colonnes_caracteres, seuil, seuil2)
 
-#### Etape 2 ####
+#### Etape 2 : Etude univariée du lien entre la variable Y et les variables X ####
 
 #2.1 Test chi-deux variable catégorielle
 
@@ -177,3 +177,21 @@ base_NE_BEA <- base_NE_BEA %>%
   select(y13_BEA_NE, variables_sign_fact, variables_sign_num)
 
 rm(base_facteurs, base_numeric)
+rm(variables_sign_fact, variables_sign_num)
+
+#### Etape 3 : Attribution des données manquantes ####
+
+nombre_na_par_variable <- colSums(is.na(repro))
+
+remplacer_na <- function(col) {
+  if (is.factor(col)) {
+    # Si la variable est factorielle, attribuez des valeurs en respectant la distribution des réponses
+    col[is.na(col)] <- sample(levels(col), sum(is.na(col)), replace = TRUE)
+  } else {
+    # Si la variable est numérique, attribuez la moyenne
+    col[is.na(col)] <- mean(col, na.rm = TRUE)
+  }
+  return(col)
+}
+
+repro <- repro %>% mutate_all(remplacer_na)
