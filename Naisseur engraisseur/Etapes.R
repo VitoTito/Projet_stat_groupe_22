@@ -48,6 +48,13 @@ base_NE_BEA <- base_NE_BEA[, colMeans(is.na(base_NE_BEA)) <= seuil]
 #1.3#
 # Suppression de données avec 1 modalité >=85% répondants
 
-occurences <- sapply(base_NE_BEA, function(x) table(x))
+occurrences <- sapply(base_NE_BEA, function(x) table(x))
 seuil2 <- nrow(base_NE_BEA) * 0.85
+
+# Filtrer les variables qui ont une modalité dépassant le seuil
+variables_a_supprimer <- names(occurrences)[sapply(occurrences, function(x) any(x >= seuil2))]
+
+# Supprimer les variables de la base de données
+base_NE_BEA <- base_NE_BEA[, !(names(base_NE_BEA) %in% variables_a_supprimer)]
+
 
