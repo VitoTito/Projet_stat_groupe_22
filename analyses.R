@@ -18,10 +18,6 @@ str(repro, list.len=ncol(repro))
 colonnes_chr <- sapply(repro, is.character)
 repro[, colonnes_chr] <- lapply(repro[, colonnes_chr], as.factor)
 
-# Remise en chr de la variable CODE_ELEVAGE
-
-repro$CODE_ELEVAGE <- as.character(repro$CODE_ELEVAGE)
-
 # Suppression des données > 15% de valeurs manquantes (NA) :
 
 na_counts <- colSums(is.na(repro)*100/92)
@@ -42,11 +38,7 @@ variables_a_supprimer <- names(occurrences)[sapply(occurrences, function(x) any(
 # Supprimer les variables de la base de donnÃ©es
 repro <- repro[, !(names(repro) %in% variables_a_supprimer)]
 
-
-
 # Variables  > 2 modalités et suppression potentielle
-
-
 
 base_factor_repro <- repro %>% 
   select_if(is.factor)
@@ -60,3 +52,42 @@ variables_a_supprimer
 # Pas de variables avec une modalité inférieure à 15%
 
 #### Etape 2 : Etude univariée du lien entre la variable Y et les variables X #### 
+
+str(repro, list.len=ncol(repro))
+
+variable_y <- as.factor(repro$y12_BEA_Repro)
+
+# Récupérez le nom des variables de la table
+toutes_les_variables <- names(repro)
+
+# Initialisez un dataframe pour stocker les résultats
+resultats <- data.frame(Variable_X = character(), Type_Variable = character(), P_Value = numeric())
+
+# Boucle pour tester chaque variable
+for (variable_x in toutes_les_variables) {
+  # Excluez la variable Y elle-même
+  if (variable_x != "y12_BEA_Repro") {
+    # Séparez les variables factorielles et numériques
+    if (is.factor(repro[[variable_x]])) {
+      # Test du Chi² pour les variables factorielles
+      contingency_table <- table(repro[[variable_x]], variable_y)
+      chi_square_test <- chisq.test(contingency_table)
+      
+      # Vérification de la p-value
+      if (chi_square_test$p.value < 0.20) {
+        resultats <- rbind(resultats, data.frame(Variable_X = variable_x, Type_Variable = "Factorielle", P_Value = chi_square_test$p.value))
+      }
+    } else if (is.numeric(repro[[variable_x]])) {
+      # Test de comparaison de moyennes pour les variables numériques avec une variable Y multivariée
+      anova_result <- aov(repro[[variable_x]] ~ variable_y)
+      
+      # Vérification de la p-value
+      if (summary(anova_result)[[1]][["Pr(>F)"]][1] < 0.20) {
+        resultats <- rbind(resultats, data.frame(Variable_X = variable_x, Type_Variable = "Numérique", P_Value = summary(anova_result)[[1]][["Pr(>F)"]][1]))
+      }
+    }
+  }
+}
+
+# Affichez le résultat final
+resultats
