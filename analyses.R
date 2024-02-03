@@ -33,26 +33,30 @@ repro <- repro[, -which(names(repro) %in% c("X15x1x2_DEPI1_MAT_rec", "X15x1x2_DE
 
 # Nombre de modalités par variables : 
 
-resultats_tableau <- sapply(repro, function(x) table(x))
-resultats_tableau
+occurrences <- sapply(repro, function(x) table(x))
+seuil2 <- nrow(repro) * 0.85
 
-str(resultats_tableau)
+# Filtrer les variables qui ont une modalitÃ© dÃ©passant le seuil
+variables_a_supprimer <- names(occurrences)[sapply(occurrences, function(x) any(x >= seuil2))]
 
-for (i in seq_along(resultats_tableau)) {
-  # Diviser chaque valeur par 92 et multiplier par 100
-  resultats_tableau[[i]] <- (resultats_tableau[[i]] / 92) * 100
-}
-
-str(resultats_tableau)
-
-for (col_name in names(resultats_tableau)) {
-  if (is.table(resultats_tableau[[col_name]])) {
-    values <- unlist(resultats_tableau[[col_name]])
-    if (any(values >= 85)) {
-      print(paste("Supprimer la variable:", col_name))
-      resultats_tableau[[col_name]] <- NULL
-    }
-  }
-}
+# Supprimer les variables de la base de donnÃ©es
+repro <- repro[, !(names(repro) %in% variables_a_supprimer)]
 
 
+
+# Variables  > 2 modalités et suppression potentielle
+
+
+
+base_factor_repro <- repro %>% 
+  select_if(is.factor)
+
+occurrences2 <- sapply(base_factor_repro, function(x) table(x))
+seuil <- 13.8
+
+variables_a_supprimer <- names(occurrences2)[sapply(occurrences2, function(x) any(x <= seuil))]
+variables_a_supprimer
+
+# Pas de variables avec une modalité inférieure à 15%
+
+#### Etape 2 : Etude univariée du lien entre la variable Y et les variables X #### 
