@@ -171,4 +171,9 @@ variables_sign_num <- names(resultats_anova)
 
 # Resultat très différent en fonction de quel test on utilise, y a qqc de bizarre
 
-rm(resultats_anova, nom_variable, variable_cible2)
+rm(resultats_anova, nom_variable, variable_cible2, anova_result)
+
+base_NE_BEA <- base_NE_BEA %>% 
+  select(y13_BEA_NE, variables_sign_fact, variables_sign_num)
+
+rm(base_facteurs, base_numeric)
