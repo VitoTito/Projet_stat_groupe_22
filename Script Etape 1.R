@@ -8,27 +8,18 @@ library(dplyr)
 
 ## CHARGEMENT DES DONNEES ##
 
-Data <- read_excel("~/PROJET STAT 2A/R/base_PC_X_varY_BEA.xlsx")
+Data <- read_excel("~/PROJET STAT 2A/R/base_NE_X_varY_BEA.xlsx")
 
 
 #################################################################
 ### Toutes les données doivent être de type Factor ou Numeric ###
 #################################################################
 
-str(Data)
 
-# Liste des variables à conserver en tant que facteur
- c(
-  "CODE_ELEVAGE",
-  "X01x1_UTH_class",
-  "X01x1_SAU_class",
-  "X02x1_NBANDE_class",
-  "X02x1_INTERVBD_class",
-  "X02x1_NBDPS_class",
-  "X03x1_UTH_PORC_class",
-  "Zone",
-  "T03_MAT_logement"
-)
+
+
+
+str(Data)
 
 
 #Liste des variables_factor Repro :   
@@ -44,7 +35,7 @@ c("CODE_ELEVAGE",
 
 
 #Liste des variables_factor NE :   
- c("CODE_ELEVAGE",
+variables_factor <- c("CODE_ELEVAGE",
   "X01x1_UTH_class",
   "X01x1_SAU_class",
   "X02x1_NBANDE_class",
@@ -57,7 +48,7 @@ c("CODE_ELEVAGE",
   "A03_PosSeroMyAs")
 
 #Liste des variables_factor PC :   
- variables_factor <- c("CODE_ELEVAGE",
+ c("CODE_ELEVAGE",
   "type_elevage",
   "X01x1_UTH_class",
   "X01x1_SAU_class",
@@ -138,15 +129,20 @@ for (var in names(Data_Mode)){
 }
 
 
-print("Modalité <15% avec 2+ modalités" )
+
+detection <- c()
 for (var in names(Data_Mode)){
   if (min(Data_Mode[[var]]) < 0.15 && length(Data_Mode[[var]])>2 ){
-    print(var) 
+    detection <- unique(c(detection, var))
   }
 }
+print("Modalité <15% avec 2+ modalités" )
+print(detection)
 
 # [!] Reste à décider quelles variables supprimer, print(Data_Mode[[var]])
 
+
+datamode
 
 #################################################################
 ### Etape Finale
