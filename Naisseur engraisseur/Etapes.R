@@ -4,6 +4,8 @@ set.seed(3011)
 
 ## Package ##
 
+library(rcompanion)
+library(Hmisc)
 library(openxlsx)
 library(dplyr)
 library(tidyr)
@@ -25,7 +27,7 @@ base_NE_BEA <- read.xlsx("base_NE_X_varY_BEA.xlsx")
 colonnes_caracteres <- sapply(base_NE_BEA, is.character)
 base_NE_BEA[, colonnes_caracteres] <- lapply(base_NE_BEA[, colonnes_caracteres], as.factor)
 
-# str(base_NE_BEA, list.len =ncol(base_NE_BEA))
+str(base_NE_BEA, list.len =ncol(base_NE_BEA))
 
 #Remettre en caractère CODE_ELEVAGE
 
@@ -78,6 +80,7 @@ base_NE_BEA <- base_NE_BEA[, !(names(base_NE_BEA) %in% variables_a_supprimer)]
 
 base_facteurs <- base_NE_BEA %>%
   select_if(is.factor)
+
 occurrences2 <- sapply(base_facteurs, function(x) table(x))
 variables_a_potent_regrouper <- names(occurrences2)[sapply(occurrences2, function(x) any(x <= seuil))]
 
@@ -133,8 +136,8 @@ rm(variable_cible, variable, i, autres_variables, chi_squared_result, chi_square
 
 base_numeric <- base_NE_BEA %>%
   mutate(y13_BEA_NE = as.numeric(y13_BEA_NE)) %>% 
-  select_if(is.numeric) 
-  
+  select_if(is.numeric)
+
 ## Test de student
 
 # variable_cible2 <- base_numeric$y13_BEA_NE
@@ -143,15 +146,17 @@ base_numeric <- base_NE_BEA %>%
 # 
 # # Effectuez le test de comparaison de moyenne pour chaque variable numérique
 # for (nom_variable in names(base_numeric)) {
-#   if (is.numeric(base_numeric[[nom_variable]]) && nom_variable != "y13_BEA_NE") {
+#   if ( nom_variable != "y13_BEA_NE") {
 #     t_test_result <- t.test(variable_cible2, base_numeric[[nom_variable]])
-#     
+# 
 #     # Vérifiez si la p-valeur est inférieure à 0.2
 #     if (t_test_result$p.value < 0.2) {
 #       resultats_tests_moyenne[[nom_variable]] <- t_test_result
 #     }
 #   }
 # }
+# 
+# variables_sign_num <- names(resultats_tests_moyenne)
 
 ## Test Anova
 
@@ -210,7 +215,7 @@ rm(nombre_na_par_variable)
 
 #### Etape 4 : Etude univariée du lien entre la variable Y et les variables X après affectation de na ####
 
-#2.1 Test chi-deux variable catégorielle
+#4.1 Test chi-deux variable catégorielle
 
 base_facteurs <- base_NE_BEA %>%
   select_if(is.factor)
@@ -230,7 +235,7 @@ for (i in seq_along(autres_variables)) {
 
 variables_sign_fact <- names(variables_significatives_p)
 
-#2.2 Test chi-deux exact variable catégorielle
+#4.2 Test chi-deux exact variable catégorielle
 
 variables_significatives_exact_p <- list()
 
@@ -249,7 +254,7 @@ variables_sign_fact_2 <- names(variables_significatives_exact_p)
 rm(variables_sign_fact_2)
 rm(variable_cible, variable, i, autres_variables, chi_squared_result, chi_squared_result_exact, variables_significatives_p, variables_significatives_exact_p)
 
-#2.3
+#4.3
 
 base_numeric <- base_NE_BEA %>%
   mutate(y13_BEA_NE = as.numeric(y13_BEA_NE)) %>% 
@@ -305,4 +310,76 @@ variables_diff <- variables_etape_2[!(variables_etape_2 %in% variables_etape_4)]
 
 rm(base_facteurs, base_numeric)
 rm(variables_sign_fact, variables_sign_num)
+rm(variables_etape_2, variables_etape_4)
 
+
+#### Etape 5 : Etude des corrélations entre les variables X retenues à p<0.20 ####
+
+#5.1 Numérique
+
+base_numeric <- base_NE_BEA %>%
+  select_if(is.numeric) 
+
+#Matrice corr
+correlation_matrix <- rcorr(as.matrix(base_numeric))
+
+# Extraire les p-values
+p_values <- correlation_matrix$P
+
+#Extraire couple variable, corrélation < 0.05
+significant_variables <- which(p_values < 0.05, arr.ind = TRUE)
+significant_variables <- data.frame(
+  Variable1 = rownames(p_values)[significant_variables[, 1]],
+  Variable2 = colnames(p_values)[significant_variables[, 2]],
+  P_Value = p_values[significant_variables]
+)
+
+variables_num_corr <- significant_variables %>%
+  filter(P_Value != 0) %>% 
+  distinct(Variable1, .keep_all = TRUE)
+
+variables_num_corr <- variables_num_corr$Variable1
+
+rm(base_numeric, correlation_matrix, significant_variables, p_values)
+
+#5.2 Factorielle
+
+base_facteurs <- base_NE_BEA %>%
+  select_if(is.factor) %>% 
+  select(-y13_BEA_NE)
+
+# Initialiser un data.frame pour stocker les résultats des tests
+results_corr <- data.frame(
+  Variable1 = character(),
+  Variable2 = character(),
+  ChiSquare = numeric(),
+  P_Value = numeric(),
+  stringsAsFactors = FALSE
+)
+
+# Boucle pour les tests de corrélation entre variables catégorielles
+for (var1 in names(base_facteurs)) {
+  for (var2 in names(base_facteurs)) {
+    if (var1 != var2) {
+      contingency_table <- table(base_NE_BEA[[var1]], base_NE_BEA[[var2]])
+      correlation_test <- chisq.test(contingency_table)
+      
+      if (correlation_test$p.value < 0.05) {
+        results_corr <- rbind(results_corr, data.frame(
+          Variable1 = var1,
+          Variable2 = var2,
+          ChiSquare = correlation_test$statistic,
+          P_Value = correlation_test$p.value
+        ))
+      }
+    }
+  }
+}
+
+variables_fact_corr <- results_corr %>%
+  filter(P_Value != 0) %>% 
+  distinct(Variable1, .keep_all = TRUE)
+
+variables_fact_corr <- variables_fact_corr$Variable1
+
+rm(base_facteurs, correlation_test, contingency_table, var1, var2, results_corr)
