@@ -40,6 +40,9 @@ seuil2 <- nrow(repro) * 0.85
 # Filtrer les variables qui ont une modalitÃ© dÃ©passant le seuil
 variables_a_supprimer <- names(occurrences)[sapply(occurrences, function(x) any(x >= seuil2))]
 
+# Voici les variables à supprimer : 
+varialbe_seuil_85 <- variables_a_supprimer
+
 # Supprimer les variables de la base de donnÃ©es
 repro <- repro[, !(names(repro) %in% variables_a_supprimer)]
 
@@ -53,8 +56,6 @@ seuil <- 13.8
 
 variables_a_supprimer <- names(occurrences2)[sapply(occurrences2, function(x) any(x <= seuil))]
 variables_a_supprimer
-
-
 
 # Pas de variables avec une modalité inférieure à 15%
 
@@ -70,7 +71,7 @@ str(repro, list.len=ncol(repro))
 
 variable_y <- as.factor(repro$y12_BEA_Repro)
 
-# Récupérez le nom des variables de la table
+# Récupérer le nom des variables de la table
 toutes_les_variables <- names(repro)
 
 # Initialisez un dataframe pour stocker les résultats
@@ -111,7 +112,7 @@ repro <- repro[, (names(repro) %in% c(liste_var$Variable_X, 'y12_BEA_Repro'))]
 #### Etape 3 : Attribution des données manquantes (NA) ####
 
 nombre_na_par_variable <- colSums(is.na(repro))
-nombre_na_par_variable
+sort(nombre_na_par_variable)
 
 remplacer_na <- function(col) {
   if (is.factor(col)) {
@@ -223,6 +224,7 @@ for (var1 in categorical_variables) {
 }
 
 # Affichez le data frame avec les résultats
+options(max.print = 99999)
 correlation_df
 sort(table(correlation_df$Variable1))
 
@@ -240,21 +242,11 @@ attr(repro$X17x1_DELAIS_rec, "label") <- "Délivres laisées dans les cases ? (1 n
 attr(repro$X17x2_AGCAST, "label") <- "Âge de castration"
 attr(repro$X17x2_ANALGCAST, "label") <- "Analgésique reçu ? (1 non, 2 oui)"
 attr(repro$X17x3_AGADO_3, "label") <- "Porcelets adoptés à partir de quel âge ?"
-                  
+attr(repro$X09x3_MODE_DISTR_START, "label") <- "??"
+attr(repro$X08_PARC_PA_1_reg_rec, "label") <- "??"
+attr(repro$T03_MAT_AlimPoAbreuSpe, "label") <- "Abreuvoir spécifique aux porcelets"
+attr(repro$Biosec_clust_3levels, "label") <-
+             
+
 variables_a_garder <- c('a')
 
-# Nous observons des variables très fortements corrélées entre elles. On ne garde que quelques variables numériques saillantes
-
-# Préparation des données (ACM)
-# data_cat <- repro[, sapply(repro, is.factor)]  # Sélectionne les variables catégorielles
-# 
-# # Analyse
-# results_acm <- MCA(data_cat, graph = TRUE)
-# 
-# # Interpréter les résultats
-# summary(results_acm)
-# get_eigenvalue(results_acm)
-# dimdesc(results_acm)
-# plot.MCA(results_acm)
-
-repro <- repro[, c('X17x1_DELRET_rec', 'Biosec_clust_4levels')]
