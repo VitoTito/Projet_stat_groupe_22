@@ -302,6 +302,8 @@ Data$Mode_Stock_Lit2 <- factor(ifelse(is.na(Data$Mode_Stock_Lit2), NA,
 
 #### Etape 2 : Etude lien var Y et var X ####
 
+# 2 .1 #
+
 seuil_sign <- 0.1
 
 Data_fact <- Data %>%
