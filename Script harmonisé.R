@@ -82,17 +82,40 @@ rm(Data_fact, seuil, occurrences2, base_var_regroup)
 
 # Base PC
 
+Data <- subset(Data, select = -c(Biosec_clust_PSE_5levels, T01_T_EXT_3, T01_T_EXT_2, T10_PS_EauDebi_1))
+
 Data$T13_ENG_AlimPot_type <- factor(ifelse(is.na(Data$T13_ENG_AlimPot_type), NA, 
                                            ifelse(Data$T13_ENG_AlimPot_type %in% c(0, 1), "0/1", "2")))
 
-Data$T10_PS_EauNbPopPo_1 <- factor(ifelse(is.na(Data$T10_PS_EauNbPopPo_1), NA, 
-                                          ifelse(Data$T10_PS_EauNbPopPo_1 %in% c(0, 1), "0/1", "2/3/4")))
+
+Data$T10_PS_EauNbPopPo_1 <- factor(
+  ifelse(
+    is.na(Data$T10_PS_EauNbPopPo_1),             # Si la valeur est NA, la garder telle quelle
+    NA,
+    ifelse(
+      Data$T10_PS_EauNbPopPo_1 %in% c(0, 1),    # Si la valeur est 0 ou 1, la recoder en "0/1"
+      "0/1",
+      as.character(Data$T10_PS_EauNbPopPo_1)    # Sinon, laisser les autres valeurs telles quelles
+    )
+  )
+)
 
 Data$T10_PS_EauNbPopPo_3 <- factor(ifelse(is.na(Data$T10_PS_EauNbPopPo_3), NA, 
                                           ifelse(Data$T10_PS_EauNbPopPo_3 %in% c(0, 1), "0/1", "2")))
 
-Data$T13_ENG_EauNbPo_1 <- factor(ifelse(is.na(Data$T13_ENG_EauNbPo_1), NA, 
-                                        ifelse(Data$T13_ENG_EauNbPo_1 %in% c(0, 1), "0/1", "2/3/4")))
+
+
+Data$T13_ENG_EauNbPo_1 <- factor(
+  ifelse(
+    is.na(Data$T13_ENG_EauNbPo_1),             # Si la valeur est NA, la garder telle quelle
+    NA,
+    ifelse(
+      Data$T13_ENG_EauNbPo_1 %in% c(0, 1),    
+      "0/1",
+      as.character(Data$T13_ENG_EauNbPo_1)    # Sinon, laisser les autres valeurs telles quelles
+    )
+  )
+)
 
 Data$T13_ENG_NbPoBd_1 <- factor(
   ifelse(
@@ -111,15 +134,165 @@ Data$T13_ENG_NbPoBd_1 <- factor(
 )
 
 
-Data$X07x1_AN_CONST5_mean_1 <- factor(ifelse(is.na(Data$X07x1_AN_CONST5_mean_1), NA, 
-                                             ifelse(Data$X07x1_AN_CONST5_mean_1 %in% c(0, 1), "0/1", "2/3/4")))
+Data$X07x1_AN_CONST5_mean_1 <- factor(
+  ifelse(
+    is.na(Data$X07x1_AN_CONST5_mean_1),             # Si la valeur est NA, la garder telle quelle
+    NA,
+    ifelse(
+      Data$X07x1_AN_CONST5_mean_1 %in% c(0, 1),    
+      "0/1",
+      as.character(Data$X07x1_AN_CONST5_mean_1)    # Sinon, laisser les autres valeurs telles quelles
+    )
+  )
+)
 
 Data$Label <- factor(ifelse(is.na(Data$Label), NA, 
                             ifelse(Data$Label %in% c(2, 3), "2/3", "1")))
 
-Data <- subset(Data, select = -c(Biosec_clust_PSE_5levels, T01_T_EXT_3, T01_T_EXT_2, T10_PS_EauDebi_1))
-
 # Base Naisseur Engraisseur
+
+Data <- subset(Data, select = -c(X12x1_TRP_BAT_6_reg_rec, X12x1_DET_BAT_1_reg_rec, X03x2_OT_repro_1_rec, 
+                                 X03x2_OT_repro_2_rec, X03x2_OT_repro_3_rec, X17x3_AGFINADO_1,  Biosec_clust_4levels,
+                                 Biosec_clust_5levels, T10_PS_EauNbPopPo_3, X14x5_NVAC1A_PPS_1, X14x5_NVAC1A_PPS_2,
+                                 T10_PS_EauDebi_1, T10_PS_AlimPoNourrLongpPo_1, Biosec_clust_PSE_5levels, clustNaissACP,
+                                 T16_BS_PresNidOiFAF, T16_BS_Pres.EssuiMain.y, T02_MAT_CourExt, T02_MAT_TrouCloiEXT,
+                                 T02_MAT_TrouToit, T03_MAT_NidOiseau, T06_VG_TrouCloiEXT, T06_VG_TrouToit, T15_QUAR_Insect,
+                                 T15_QUAR_Appat, MPSiET))
+
+Data$X12x1_BLRACBD_2_reg <- factor(ifelse(is.na(Data$X12x1_BLRACBD_2_reg), NA, 
+                                          ifelse(Data$X12x1_BLRACBD_2_reg %in% c(0, 1), "0/1", "2")))
+
+Data$X12x1_BLRACBD_3_reg <- factor(ifelse(is.na(Data$X12x1_BLRACBD_3_reg), NA, 
+                                          ifelse(Data$X12x1_BLRACBD_3_reg %in% c(0, 1), "0/1", "2")))
+
+Data$X12x1_RACavTRP_3_reg_rec <- factor(ifelse(is.na(Data$X12x1_RACavTRP_3_reg_rec), NA, 
+                                               ifelse(Data$X12x1_RACavTRP_3_reg_rec %in% c(0, 2), "0/2", "1")))
+
+Data$X06x1_gene_majo_2_id1_rec <- factor(ifelse(is.na(Data$X06x1_gene_majo_2_id1_rec), NA, 
+                                                ifelse(Data$X06x1_gene_majo_2_id1_rec %in% c(1, 2), "1/2", "0")))
+
+Data$X14x5_NVAC1A_TR_1 <- factor(ifelse(is.na(Data$X14x5_NVAC1A_TR_1), NA, 
+                                        ifelse(Data$X14x5_NVAC1A_TR_1 %in% c(2, 3), "2/3", "0/1")))
+
+Data$X14x5_NVAC1A_TR_3 <- factor(ifelse(is.na(Data$X14x5_NVAC1A_TR_3), NA, 
+                                        ifelse(Data$X14x5_NVAC1A_TR_3 %in% c(1, 2), "1/2", "0")))
+
+Data$X17x1_NTRFO_1 <- factor(ifelse(is.na(Data$X17x1_NTRFO_1), NA, 
+                                    ifelse(Data$X17x1_NTRFO_1 %in% c(2, 3), "2/3", "0/1")))
+
+Data$T07_VG_EauNbTr_NbT_3 <- factor(ifelse(is.na(Data$T07_VG_EauNbTr_NbT_3), NA, 
+                                           ifelse(Data$T07_VG_EauNbTr_NbT_3 %in% c(0, 1), "0/1", "2")))
+
+Data$X17x1_QALMB_HIV_1 <- factor(ifelse(is.na(Data$X17x1_QALMB_HIV_1), NA, 
+                                        ifelse(Data$X17x1_QALMB_HIV_1 %in% c(1, 2), "1/2", "0")))
+
+Data$X17x1_QALMB_HIV_2 <- factor(ifelse(is.na(Data$X17x1_QALMB_HIV_2), NA, 
+                                        ifelse(Data$X17x1_QALMB_HIV_2 %in% c(2, 3), "2/3", "0/1")))
+
+Data$X09x5_NbREP.JR_1xPorcelet <- factor(ifelse(is.na(Data$X09x5_NbREP.JR_1xPorcelet), NA, 
+                                                ifelse(Data$X09x5_NbREP.JR_1xPorcelet %in% c(1, 2), "1/2", "0")))
+
+Data$T10_PS_TpsPres_rec <- factor(ifelse(is.na(Data$T10_PS_TpsPres_rec), NA, 
+                                         ifelse(Data$T10_PS_TpsPres_rec %in% c(0, 1), "0/1", "2")))
+
+Data$T10_PS_EauNbPopPo_1 <- factor(
+  ifelse(
+    is.na(Data$T10_PS_EauNbPopPo_1),             # Si la valeur est NA, la garder telle quelle
+    NA,
+    ifelse(
+      Data$T10_PS_EauNbPopPo_1 %in% c(0, 1),    # Si la valeur est 0 ou 1, la recoder en "0/1"
+      "0/1",
+      as.character(Data$T10_PS_EauNbPopPo_1)    # Sinon, laisser les autres valeurs telles quelles
+    )
+  )
+)
+
+T13_ENG_EauNbPo_1
+
+Data$T13_ENG_EauNbPo_1 <- factor(
+  ifelse(
+    is.na(Data$T13_ENG_EauNbPo_1),             # Si la valeur est NA, la garder telle quelle
+    NA,
+    ifelse(
+      Data$T13_ENG_EauNbPo_1 %in% c(3, 4),    
+      "3/4",
+      as.character(Data$T13_ENG_EauNbPo_1)    # Sinon, laisser les autres valeurs telles quelles
+    )
+  )
+)
+
+Data$T13_ENG_EauNbPo_2 <- factor(ifelse(is.na(Data$T13_ENG_EauNbPo_2), NA, 
+                                        ifelse(Data$T13_ENG_EauNbPo_2 %in% c(1, 2), "1/2", "0")))
+
+Data$T13_ENG_NbPoBd_1 <- factor(ifelse(is.na(Data$T13_ENG_NbPoBd_1), NA, 
+                                       ifelse(Data$T13_ENG_NbPoBd_1 %in% c(0, 1), "0/1", "2")))
+
+Data$T13_ENG_NbPoBd_1 <- factor(
+  ifelse(
+    is.na(Data$T13_ENG_NbPoBd_1),             # Si la valeur est NA, la garder telle quelle
+    NA,
+    ifelse(
+      Data$T13_ENG_NbPoBd_1 %in% c(3, 4, 5),    
+      "3/4/5",
+      as.character(Data$T13_ENG_NbPoBd_1)    # Sinon, laisser les autres valeurs telles quelles
+    )
+  )
+)
+
+
+Data$X11_FREQ_LAV_1 <- factor(
+  ifelse(
+    is.na(Data$X11_FREQ_LAV_1),             # Si la valeur est NA, la garder telle quelle
+    NA,
+    ifelse(
+      Data$X11_FREQ_LAV_1 %in% c(2, 3),    
+      "2/3",
+      as.character(Data$X11_FREQ_LAV_1)    # Sinon, laisser les autres valeurs telles quelles
+    )
+  )
+)
+
+
+
+Data$X07x1_AN_CONST4_mean_1 <- factor(
+  ifelse(
+    is.na(Data$X07x1_AN_CONST4_mean_1),             # Si la valeur est NA, la garder telle quelle
+    NA,
+    ifelse(
+      Data$X07x1_AN_CONST4_mean_1 %in% c(3, 4),    
+      "3/4",
+      as.character(Data$X07x1_AN_CONST4_mean_1)    # Sinon, laisser les autres valeurs telles quelles
+    )
+  )
+)
+
+
+Data$X07x1_AN_CONST5_mean_1 <- factor(
+  ifelse(
+    is.na(Data$X07x1_AN_CONST5_mean_1),             # Si la valeur est NA, la garder telle quelle
+    NA,
+    ifelse(
+      Data$X07x1_AN_CONST5_mean_1 %in% c(3, 4),    
+      "3/4",
+      as.character(Data$X07x1_AN_CONST5_mean_1)    # Sinon, laisser les autres valeurs telles quelles
+    )
+  )
+)
+
+Data$Label <- factor(ifelse(is.na(Data$Label), NA, 
+                            ifelse(Data$Label %in% c(2, 3), "2/3", "1")))
+
+Data$T16_BS_PresNidOiHangard <- factor(ifelse(is.na(Data$T16_BS_PresNidOiHangard), NA, 
+                                              ifelse(Data$T16_BS_PresNidOiHangard %in% c(1, 3), "1/3", "2")))
+
+Data$T16_BS_PresNidOiCouloir <- factor(ifelse(is.na(Data$T16_BS_PresNidOiCouloir), NA, 
+                                              ifelse(Data$T16_BS_PresNidOiCouloir %in% c(1, 3), "1/3", "2")))
+
+Data$MAT_Bat <- factor(ifelse(is.na(Data$MAT_Bat), NA, 
+                              ifelse(Data$MAT_Bat %in% c(1, 2), "1/2", "0")))
+
+Data$Mode_Stock_Lit2 <- factor(ifelse(is.na(Data$Mode_Stock_Lit2), NA, 
+                                      ifelse(Data$Mode_Stock_Lit2 %in% c(1, 2), "1/2", "0")))
 
 
 
