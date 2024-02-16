@@ -366,6 +366,55 @@ rm(Data_fact, chi_squared_result, seuil_sign, i, variable)
 
 # 2.2 #
 
+Data_num <- Data %>% 
+  select_if(is.numeric)
+str(Data_num)
+
+colonnes_numeriques <- names(Data)[sapply(Data, is.numeric)]
+test_raté <-c()
+
+# Assuming colonnes_numeriques is a vector containing the names of numeric columns in Data
+for (var in colonnes_numeriques) {
+  
+  print(var)
+  
+  
+  # Perform Kruskal-Wallis test
+  kruskal_test_result <- kruskal.test(Data[[var]] ~ Data[[2]], data = Data)
+  
+  # Print Kruskal-Wallis test result
+  #print(kruskal_test_result)
+  
+  if (kruskal_test_result$p.value >= 0.1) {
+    test_raté <- unique(c(test_raté, var))  
+  }
+}
+
+
+print(test_raté)
+
+variables_changées <- setdiff(colonnes_numeriques, test_raté)
+variables_changées
+
+
+### AFFICHER UN HISTOGRAMME
+plot_data <- data.frame(X = Data[["A05_MdTGRIPPE"]], 
+                        Color = as.factor(Data[[2]]))
+
+# Calculer la moyenne par groupe
+mu <- aggregate(X ~ Color, data = plot_data, mean)
+# Création du graphique
+p <- ggplot(plot_data, aes(x = X, fill = Color)) +
+  geom_histogram(color = "white", position = "stack", bins = 50) +
+  labs(x = "A03_sdSeroTTg", y = "Fréquence") +   
+  geom_vline(data = mu, aes(xintercept = X, color = Color), alpha = 0.8, linetype = "dashed") +
+  geom_text(data = mu, aes(x = X + 0.1, y = 30, label = paste("Moyenne:", round(X, 2))), color = "black", size = 3, vjust = -1) +
+  theme_minimal()
+print(p)
+
+
+
+
 #### Etape 6 : Presentation Resultats ####
 
 print("variables avec plus de 15% de NA")
