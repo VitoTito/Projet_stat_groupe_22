@@ -10,7 +10,7 @@ library(dplyr)
 
 ## CHARGEMENT DES DONNEES ##
 
-setwd("O:/Annee2/stats/Groupe22/Donn?es")
+setwd("O:/Annee2/stats/Groupe22/Donnees")
 
 base_NE_BEA <- readRDS(file="base_NE_X_varY_BEA.RData")
 base_PC_BEA <- readRDS(file="base_PC_X_varY_BEA.RData")
@@ -31,7 +31,7 @@ Data_name <- "base_NE_BEA"
 
 # 1.1  Mettre les variables au bon format
 
-# Data$y13_BEA_NE <- as.factor(Data$y13_BEA_NE)
+Data$y13_BEA_NE <- as.factor(Data$y13_BEA_NE)
 
 ## 1.2 Supprimer donnees NA > 0.15 ##
 
@@ -83,7 +83,7 @@ occurrences3 <- sapply(base_var_regroup, function(x) table(x))
 rm(Data_fact, seuil, occurrences2, base_var_regroup)
 
 
-#### Etape 1.5 : Regroupement variables
+#### Etape 1.5 : Regroupement variables ####
 
 # Base PC
 
@@ -303,7 +303,7 @@ Data$Mode_Stock_Lit2 <- factor(ifelse(is.na(Data$Mode_Stock_Lit2), NA,
 
 #### Etape 2 : Etude lien var Y et var X ####
 
-# 2 .1 #
+# 2 .1 # Significativite variable fact
 
 seuil_sign <- 0.1
 
