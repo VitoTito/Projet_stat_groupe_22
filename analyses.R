@@ -245,8 +245,22 @@ attr(repro$X17x3_AGADO_3, "label") <- "Porcelets adoptés à partir de quel âge ?"
 attr(repro$X09x3_MODE_DISTR_START, "label") <- "??"
 attr(repro$X08_PARC_PA_1_reg_rec, "label") <- "??"
 attr(repro$T03_MAT_AlimPoAbreuSpe, "label") <- "Abreuvoir spécifique aux porcelets"
-attr(repro$Biosec_clust_3levels, "label") <-
+attr(repro$Biosec_clust_3levels, "label") <- "?"
              
+str(repro, list.len=ncol(repro))
 
-variables_a_garder <- c('a')
+variables_a_garder <- c('')
+
+# Sélectionnez les variables pour la régression logistique
+variables <- c("X17x1_LIBLACT", "Biosec_clust_4levels", "T03_MAT_logement", "PA_EL", "T06_VG_ZonDelPasContacSang", "T06_VG_Trou", "LIT_G", "y12_BEA_Repro")
+
+# Créez un sous-ensemble du dataframe avec les variables sélectionnées
+data_subset <- repro[variables]
+
+# Effectuez la régression logistique multinomiale
+library(nnet)
+model <- multinom(y12_BEA_Repro ~ ., data = data_subset)
+
+# Affichez les résultats du modèle
+summary(model)
 

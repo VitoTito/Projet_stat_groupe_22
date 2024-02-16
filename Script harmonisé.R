@@ -78,6 +78,51 @@ occurrences3 <- sapply(base_var_regroup, function(x) table(x))
 
 rm(Data_fact, seuil, occurrences2, base_var_regroup)
 
+#### Etape 1.5 : Regroupement variables
+
+# Base PC
+
+Data$T13_ENG_AlimPot_type <- factor(ifelse(is.na(Data$T13_ENG_AlimPot_type), NA, 
+                                           ifelse(Data$T13_ENG_AlimPot_type %in% c(0, 1), "0/1", "2")))
+
+Data$T10_PS_EauNbPopPo_1 <- factor(ifelse(is.na(Data$T10_PS_EauNbPopPo_1), NA, 
+                                          ifelse(Data$T10_PS_EauNbPopPo_1 %in% c(0, 1), "0/1", "2/3/4")))
+
+Data$T10_PS_EauNbPopPo_3 <- factor(ifelse(is.na(Data$T10_PS_EauNbPopPo_3), NA, 
+                                          ifelse(Data$T10_PS_EauNbPopPo_3 %in% c(0, 1), "0/1", "2")))
+
+Data$T13_ENG_EauNbPo_1 <- factor(ifelse(is.na(Data$T13_ENG_EauNbPo_1), NA, 
+                                        ifelse(Data$T13_ENG_EauNbPo_1 %in% c(0, 1), "0/1", "2/3/4")))
+
+Data$T13_ENG_NbPoBd_1 <- factor(
+  ifelse(
+    is.na(Data$T13_ENG_NbPoBd_1),                # Si la valeur est NA, la garder telle quelle
+    NA,
+    ifelse(
+      Data$T13_ENG_NbPoBd_1 %in% c(0, 1),       # Si la valeur est 0 ou 1, la recoder en "0/1"
+      "0/1",
+      ifelse(
+        Data$T13_ENG_NbPoBd_1 %in% c(2, 3),     # Si la valeur est 2 ou 3, la recoder en "2/3"
+        "2/3",
+        "4/5"                                    # Sinon, recoder les valeurs 4 et 5 ensemble
+      )
+    )
+  )
+)
+
+
+Data$X07x1_AN_CONST5_mean_1 <- factor(ifelse(is.na(Data$X07x1_AN_CONST5_mean_1), NA, 
+                                             ifelse(Data$X07x1_AN_CONST5_mean_1 %in% c(0, 1), "0/1", "2/3/4")))
+
+Data$Label <- factor(ifelse(is.na(Data$Label), NA, 
+                            ifelse(Data$Label %in% c(2, 3), "2/3", "1")))
+
+Data <- subset(Data, select = -c(Biosec_clust_PSE_5levels, T01_T_EXT_3, T01_T_EXT_2, T10_PS_EauDebi_1))
+
+# Base Naisseur Engraisseur
+
+
+
 #### Etape 2 : Etude lien var Y et var X ####
 #### Etape 6 : Presentation Resultats ####
 
