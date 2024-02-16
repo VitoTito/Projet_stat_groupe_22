@@ -1,6 +1,7 @@
-#### Préparation ####
+#### Preparation ####
 
 rm(list = ls())
+set.seed(3011)
 
 ## CHARGEMENT DES PACKAGES ##
 
@@ -9,7 +10,7 @@ library(dplyr)
 
 ## CHARGEMENT DES DONNEES ##
 
-setwd("O:/Annee2/stats/Groupe22/Données")
+setwd("O:/Annee2/stats/Groupe22/Donn?es")
 
 base_NE_BEA <- readRDS(file="base_NE_X_varY_BEA.RData")
 base_PC_BEA <- readRDS(file="base_PC_X_varY_BEA.RData")
@@ -17,9 +18,12 @@ base_Repro_BEA <- readRDS(file="base_Repro_X_varY_BEA.RData")
 
 ## CHOIX DE LA BASE ## 
 
-# Data <- base_NE_BEA
+Data <- base_NE_BEA
+Data_name <- "base_NE_BEA"
 # Data <- base_PC_BEA
-Data <- base_Repro_BEA
+# Data_name <- "base_PC_BEA"
+# Data <- base_Repro_BEA
+# Data_name <- "base_Repro_BEA"
 
 ##### Etape 1 : Verification donnees #####
 
@@ -34,7 +38,7 @@ Data <- base_Repro_BEA
 seuil <- nrow(Data) * 0.15
 Data_NA <- colSums(is.na(Data)) 
 
-# Pour regarder les NA en détail
+# Pour regarder les NA en d?tail
 # Data_NA <- as.data.frame(Data_NA) 
 # Data_NA <- Data_NA %>% 
 #    arrange(desc(Data_NA))
@@ -56,7 +60,7 @@ occurrences <- sapply(Data_fact, function(x) table(x))
 seuil2 <- nrow(Data) * 0.85 
 var_a_suppr2 <- names(occurrences)[sapply(occurrences, function(x) any(x >= seuil2))]
 
-# Pour regarder les var supprime en  détail
+# Pour regarder les var supprime en  d?tail
 # supp <- base_NE_BEA[, (names(base_NE_BEA) %in% variables_a_supprimer)]
 # occurrences_supp <- sapply(supp, function(x) table(x)) 
 
@@ -78,9 +82,9 @@ occurrences3 <- sapply(base_var_regroup, function(x) table(x))
 
 rm(Data_fact, seuil, occurrences2, base_var_regroup)
 
-#### Etape 1.5 : Regroupement variables
+#### Etape 1.5 : Regroupement variables ####
 
-# Base PC
+# 1.5.1 Base PC
 
 Data <- subset(Data, select = -c(Biosec_clust_PSE_5levels, T01_T_EXT_3, T01_T_EXT_2, T10_PS_EauDebi_1))
 
@@ -149,7 +153,7 @@ Data$X07x1_AN_CONST5_mean_1 <- factor(
 Data$Label <- factor(ifelse(is.na(Data$Label), NA, 
                             ifelse(Data$Label %in% c(2, 3), "2/3", "1")))
 
-# Base Naisseur Engraisseur
+# 1.5.2 Base Naisseur Engraisseur
 
 Data <- subset(Data, select = -c(X12x1_TRP_BAT_6_reg_rec, X12x1_DET_BAT_1_reg_rec, X03x2_OT_repro_1_rec, 
                                  X03x2_OT_repro_2_rec, X03x2_OT_repro_3_rec, X17x3_AGFINADO_1,  Biosec_clust_4levels,
@@ -297,13 +301,41 @@ Data$Mode_Stock_Lit2 <- factor(ifelse(is.na(Data$Mode_Stock_Lit2), NA,
 
 
 #### Etape 2 : Etude lien var Y et var X ####
+
+seuil_sign <- 0.1
+
+Data_fact <- Data %>%
+  select_if(is.factor)
+variable_cible <- Data_fact$y13_BEA_NE
+autres_variables <- Data_fact[, -1]
+variables_significatives_p <- list()
+
+# Effectuez le test du chi-deux pour chaque variable 
+for (i in seq_along(autres_variables)) {
+  variable = autres_variables[[i]]
+  chi_squared_result <- tryCatch({
+    chisq.test(table(variable_cible, variable))
+  }, warning = function(w) {
+    # En cas d'avertissement, effectuer un test du chi-deux exact
+    exact_test <- chisq.test(table(variable_cible, variable), simulate.p.value = TRUE)
+    return(exact_test)
+  })
+  
+  # Verifiez si la p-valeur est inferieure 0.1
+  if (chi_squared_result$p.value < seuil_sign) {
+    variables_significatives_p[[names(autres_variables)[i]]] <- chi_squared_result$p.value
+  }
+}
+
+variables_sign_fact <- names(variables_significatives_p)
+
 #### Etape 6 : Presentation Resultats ####
 
 print("variables avec plus de 15% de NA")
 print(var_a_suppr)
 
-print("variables factorielles avec modalité representant plus de 85% donnees")
+print("variables factorielles avec modalit? representant plus de 85% donnees")
 print(var_a_suppr2)
 
-print("variables factorielles avec plus de 3 modalité et dont une modalité représente moins de 15% des donnees")
+print("variables factorielles avec plus de 3 modalit? et dont une modalit? repr?sente moins de 15% des donnees")
 print(occurrences3)
