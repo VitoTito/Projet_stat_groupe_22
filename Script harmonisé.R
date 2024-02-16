@@ -176,14 +176,36 @@ Data$X12x1_RACavTRP_3_reg_rec <- factor(ifelse(is.na(Data$X12x1_RACavTRP_3_reg_r
 Data$X06x1_gene_majo_2_id1_rec <- factor(ifelse(is.na(Data$X06x1_gene_majo_2_id1_rec), NA, 
                                                 ifelse(Data$X06x1_gene_majo_2_id1_rec %in% c(1, 2), "1/2", "0")))
 
-Data$X14x5_NVAC1A_TR_1 <- factor(ifelse(is.na(Data$X14x5_NVAC1A_TR_1), NA, 
-                                        ifelse(Data$X14x5_NVAC1A_TR_1 %in% c(2, 3), "2/3", "0/1")))
+
+
+Data$X14x5_NVAC1A_TR_1 <- factor(
+  ifelse(
+    is.na(Data$X14x5_NVAC1A_TR_1),             # Si la valeur est NA, la garder telle quelle
+    NA,
+    ifelse(
+      Data$X14x5_NVAC1A_TR_1 %in% c(2, 3),    
+      "2/3",
+      as.character(Data$X14x5_NVAC1A_TR_1)    # Sinon, laisser les autres valeurs telles quelles
+    )
+  )
+)
+
 
 Data$X14x5_NVAC1A_TR_3 <- factor(ifelse(is.na(Data$X14x5_NVAC1A_TR_3), NA, 
                                         ifelse(Data$X14x5_NVAC1A_TR_3 %in% c(1, 2), "1/2", "0")))
 
-Data$X17x1_NTRFO_1 <- factor(ifelse(is.na(Data$X17x1_NTRFO_1), NA, 
-                                    ifelse(Data$X17x1_NTRFO_1 %in% c(2, 3), "2/3", "0/1")))
+
+Data$X17x1_NTRFO_1 <- factor(
+  ifelse(
+    is.na(Data$X17x1_NTRFO_1),             # Si la valeur est NA, la garder telle quelle
+    NA,
+    ifelse(
+      Data$X17x1_NTRFO_1 %in% c(2, 3),    
+      "2/3",
+      as.character(Data$X17x1_NTRFO_1)    # Sinon, laisser les autres valeurs telles quelles
+    )
+  )
+)
 
 Data$T07_VG_EauNbTr_NbT_3 <- factor(ifelse(is.na(Data$T07_VG_EauNbTr_NbT_3), NA, 
                                            ifelse(Data$T07_VG_EauNbTr_NbT_3 %in% c(0, 1), "0/1", "2")))
@@ -191,8 +213,18 @@ Data$T07_VG_EauNbTr_NbT_3 <- factor(ifelse(is.na(Data$T07_VG_EauNbTr_NbT_3), NA,
 Data$X17x1_QALMB_HIV_1 <- factor(ifelse(is.na(Data$X17x1_QALMB_HIV_1), NA, 
                                         ifelse(Data$X17x1_QALMB_HIV_1 %in% c(1, 2), "1/2", "0")))
 
-Data$X17x1_QALMB_HIV_2 <- factor(ifelse(is.na(Data$X17x1_QALMB_HIV_2), NA, 
-                                        ifelse(Data$X17x1_QALMB_HIV_2 %in% c(2, 3), "2/3", "0/1")))
+
+Data$X17x1_QALMB_HIV_2 <- factor(
+  ifelse(
+    is.na(Data$X17x1_QALMB_HIV_2),             # Si la valeur est NA, la garder telle quelle
+    NA,
+    ifelse(
+      Data$X17x1_QALMB_HIV_2 %in% c(2, 3),    
+      "2/3",
+      as.character(Data$X17x1_QALMB_HIV_2)    # Sinon, laisser les autres valeurs telles quelles
+    )
+  )
+)
 
 Data$X09x5_NbREP.JR_1xPorcelet <- factor(ifelse(is.na(Data$X09x5_NbREP.JR_1xPorcelet), NA, 
                                                 ifelse(Data$X09x5_NbREP.JR_1xPorcelet %in% c(1, 2), "1/2", "0")))
@@ -212,7 +244,6 @@ Data$T10_PS_EauNbPopPo_1 <- factor(
   )
 )
 
-T13_ENG_EauNbPo_1
 
 Data$T13_ENG_EauNbPo_1 <- factor(
   ifelse(
@@ -229,8 +260,6 @@ Data$T13_ENG_EauNbPo_1 <- factor(
 Data$T13_ENG_EauNbPo_2 <- factor(ifelse(is.na(Data$T13_ENG_EauNbPo_2), NA, 
                                         ifelse(Data$T13_ENG_EauNbPo_2 %in% c(1, 2), "1/2", "0")))
 
-Data$T13_ENG_NbPoBd_1 <- factor(ifelse(is.na(Data$T13_ENG_NbPoBd_1), NA, 
-                                       ifelse(Data$T13_ENG_NbPoBd_1 %in% c(0, 1), "0/1", "2")))
 
 Data$T13_ENG_NbPoBd_1 <- factor(
   ifelse(
@@ -298,6 +327,7 @@ Data$MAT_Bat <- factor(ifelse(is.na(Data$MAT_Bat), NA,
 
 Data$Mode_Stock_Lit2 <- factor(ifelse(is.na(Data$Mode_Stock_Lit2), NA, 
                                       ifelse(Data$Mode_Stock_Lit2 %in% c(1, 2), "1/2", "0")))
+
 
 
 
