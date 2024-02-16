@@ -332,6 +332,10 @@ for (i in seq_along(autres_variables)) {
 
 variables_sign_fact <- names(variables_significatives_p)
 
+rm(Data_fact, chi_squared_result, seuil_sign, i, variable)
+
+# 2.2 #
+
 #### Etape 6 : Presentation Resultats ####
 
 print("variables avec plus de 15% de NA")
