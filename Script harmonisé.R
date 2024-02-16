@@ -82,9 +82,10 @@ occurrences3 <- sapply(base_var_regroup, function(x) table(x))
 
 rm(Data_fact, seuil, occurrences2, base_var_regroup)
 
-#### Etape 1.5 : Regroupement variables ####
 
-# 1.5.1 Base PC
+#### Etape 1.5 : Regroupement variables
+
+# Base PC
 
 Data <- subset(Data, select = -c(Biosec_clust_PSE_5levels, T01_T_EXT_3, T01_T_EXT_2, T10_PS_EauDebi_1))
 
@@ -153,7 +154,7 @@ Data$X07x1_AN_CONST5_mean_1 <- factor(
 Data$Label <- factor(ifelse(is.na(Data$Label), NA, 
                             ifelse(Data$Label %in% c(2, 3), "2/3", "1")))
 
-# 1.5.2 Base Naisseur Engraisseur
+# Base Naisseur Engraisseur
 
 Data <- subset(Data, select = -c(X12x1_TRP_BAT_6_reg_rec, X12x1_DET_BAT_1_reg_rec, X03x2_OT_repro_1_rec, 
                                  X03x2_OT_repro_2_rec, X03x2_OT_repro_3_rec, X17x3_AGFINADO_1,  Biosec_clust_4levels,
