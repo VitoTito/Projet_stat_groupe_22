@@ -10,7 +10,8 @@ library(dplyr)
 
 ## CHARGEMENT DES DONNEES ##
 
-setwd("O:/Annee2/stats/Groupe22/Donnees")
+# setwd("O:/Annee2/stats/Groupe22/Donnees")
+# setwd("C:/Users/Vito/Desktop/Dépôt Projet Statistique 2A/1.Donnees") # mon dossier (Vito)
 
 base_NE_BEA <- readRDS(file="base_NE_X_varY_BEA.RData")
 base_PC_BEA <- readRDS(file="base_PC_X_varY_BEA.RData")
