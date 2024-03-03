@@ -12,9 +12,9 @@ library(factoextra)
 
 ## CHARGEMENT DES DONNEES ##
 
-setwd("O:/Annee2/stats/Groupe22/Donnees")
+# setwd("O:/Annee2/stats/Groupe22/Donnees")
 # setwd("C:/Users/Vito/Desktop/D?p?t Projet Statistique 2A/1.Donnees") # mon dossier (Vito)
-# setwd("C:/Users/nsdk1/Desktop/R/Projet_stat/Source")
+setwd("C:/Users/nsdk1/Desktop/R/Projet_stat/Source")
 
 base_NE_BEA <- readRDS(file="base_NE_X_varY_BEA.RData")
 base_PC_BEA <- readRDS(file="base_PC_X_varY_BEA.RData")
@@ -478,6 +478,90 @@ Data <- Data %>%
 rm(nombre_na_par_variable)
 
 #### Etape 4 : Etude univariée du lien entre la variable Y et les variables X après affectation de na ####
+
+# 4.1 # Significativite variable fact 
+
+seuil_sign <- 0.1
+
+Data_fact <- Data %>%
+  select_if(is.factor)
+
+variable_cible <- Data_fact$y13_BEA_NE
+autres_variables <- Data_fact[, -1]
+variables_significatives_p <- list()
+
+# Effectuez le test du chi-deux pour chaque variable 
+for (i in seq_along(autres_variables)) {
+  variable = autres_variables[[i]]
+  chi_squared_result <- tryCatch({
+    chisq.test(table(variable_cible, variable))
+  }, warning = function(w) {
+    # En cas d'avertissement, effectuer un test du chi-deux exact
+    exact_test <- chisq.test(table(variable_cible, variable), simulate.p.value = TRUE)
+    return(exact_test)
+  })
+  
+  # Verifiez si la p-valeur est inferieure 0.1
+  if (chi_squared_result$p.value < seuil_sign) {
+    variables_significatives_p[[names(autres_variables)[i]]] <- chi_squared_result$p.value
+  }
+}
+
+variables_sign_fact2 <- names(variables_significatives_p)
+variables_sign_fact2
+
+
+rm(Data_fact, chi_squared_result, i, variable, variable_cible)
+
+
+# 4.2 # Significativite variable num (Maxime)
+
+Data_num <- Data %>% 
+  select_if(is.numeric)
+str(Data_num)
+
+colonnes_numeriques <- names(Data)[sapply(Data, is.numeric)]
+test_raté <-c()
+
+
+for (var in colonnes_numeriques) {
+  
+  #print(var)
+  
+  # Perform Kruskal-Wallis test
+  kruskal_test_result <- kruskal.test(Data[[var]] ~ Data[[2]], data = Data)
+  
+  #print(kruskal_test_result)
+  
+  if (!is.na(kruskal_test_result$p.value) && kruskal_test_result$p.value >= seuil_sign) {
+    test_raté <- unique(c(test_raté, var))  
+  }
+}
+
+print(test_raté)
+
+variables_sign_num2 <- setdiff(colonnes_numeriques, test_raté)
+variables_sign_num2
+
+### AFFICHER UN HISTOGRAMME
+plot_data <- data.frame(X = Data[["A05_MdTGRIPPE"]],  #On peut choisir la variable ici
+                        Color = as.factor(Data[[2]]))
+
+mu <- aggregate(X ~ Color, data = plot_data, mean)
+# Création du graphique
+p <- ggplot(plot_data, aes(x = X, fill = Color)) +
+  geom_histogram(color = "white", position = "stack", bins = 50) +
+  labs(x = "A03_sdSeroTTg", y = "Fréquence") +   
+  geom_vline(data = mu, aes(xintercept = X, color = Color), alpha = 0.8, linetype = "dashed") +
+  geom_text(data = mu, aes(x = X + 0.1, y = 30, label = paste("Moyenne:", round(X, 2))), color = "black", size = 3, vjust = -1) +
+  theme_minimal()
+print(p)
+
+## 2.3 ## Base avec variables significative
+
+Data <- Data %>% 
+  select(CODE_ELEVAGE,y13_BEA_NE,all_of(variables_sign_fact2),all_of(variables_sign_num2))
+
 #### Etape 6 : Presentation Resultats ####
 
 print("variables avec plus de 15% de NA")
