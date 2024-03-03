@@ -13,6 +13,7 @@ library(factoextra)
 ## CHARGEMENT DES DONNEES ##
 
 # setwd("O:/Annee2/stats/Groupe22/Donnees") # Chemin VM
+# ("C:/Users/Vito/Desktop/D�p�t Projet Statistique 2A/1.Donnees") # mon dossier (Vito)
 # setwd("C:/Users/Vito/Desktop/Dépôt Projet Statistique 2A/1.Donnees") # mon dossier (Vito)
 # setwd("C:/Users/nsdk1/Desktop/R/Projet_stat/Source") # Chemin perso Nathan
 
@@ -523,7 +524,7 @@ Data_num <- Data %>%
 str(Data_num)
 
 colonnes_numeriques <- names(Data)[sapply(Data, is.numeric)]
-test_raté <-c()
+test_rate <-c()
 
 
 for (var in colonnes_numeriques) {
@@ -592,4 +593,11 @@ variables_num_corr <- significant_variables %>%
 variables_num_corr <- variables_num_corr$Variable1
 
 rm(Data_numeric, correlation_matrix, significant_variables, p_values)
+
+
+print("variables factorielles avec modalit? representant plus de 85% donnees")
+print(var_a_suppr2)
+ 
+print("variables factorielles avec plus de 3 modalit? et dont une modalit? repr?sente moins de 15% des donnees")
+print(occurrences3)
 
