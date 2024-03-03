@@ -13,8 +13,8 @@ library(factoextra)
 ## CHARGEMENT DES DONNEES ##
 
 # setwd("O:/Annee2/stats/Groupe22/Donnees") # Chemin VM
-# setwd("C:/Users/Vito/Desktop/D?p?t Projet Statistique 2A/1.Donnees") # mon dossier (Vito)
-setwd("C:/Users/nsdk1/Desktop/R/Projet_stat/Source") # Chemin perso Nathan
+setwd("C:/Users/Vito/Desktop/Dépôt Projet Statistique 2A/1.Donnees") # mon dossier (Vito)
+# setwd("C:/Users/nsdk1/Desktop/R/Projet_stat/Source") # Chemin perso Nathan
 
 base_NE_BEA <- readRDS(file="base_NE_X_varY_BEA.RData")
 base_PC_BEA <- readRDS(file="base_PC_X_varY_BEA.RData")
@@ -25,11 +25,11 @@ base_Repro_BEA <- readRDS(file="base_Repro_X_varY_BEA.RData")
 # Data <- base_NE_BEA
 # Data_name <- "base_NE_BEA"
 
-# Data <- base_PC_BEA
-# Data_name <- "base_PC_BEA"
+Data <- base_PC_BEA
+Data_name <- "base_PC_BEA"
 
-Data <- base_Repro_BEA
-Data_name <- "base_Repro_BEA"
+# Data <- base_Repro_BEA
+# Data_name <- "base_Repro_BEA"
 
 ##### Etape 1 : Verification donnees #####
 
