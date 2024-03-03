@@ -13,7 +13,6 @@ library(factoextra)
 ## CHARGEMENT DES DONNEES ##
 
 # setwd("O:/Annee2/stats/Groupe22/Donnees") # Chemin VM
-# ("C:/Users/Vito/Desktop/D�p�t Projet Statistique 2A/1.Donnees") # mon dossier (Vito)
 # setwd("C:/Users/Vito/Desktop/Dépôt Projet Statistique 2A/1.Donnees") # mon dossier (Vito)
 # setwd("C:/Users/nsdk1/Desktop/R/Projet_stat/Source") # Chemin perso Nathan
 
@@ -524,7 +523,7 @@ Data_num <- Data %>%
 str(Data_num)
 
 colonnes_numeriques <- names(Data)[sapply(Data, is.numeric)]
-test_rate <-c()
+test_raté <-c()
 
 
 for (var in colonnes_numeriques) {
@@ -592,12 +591,59 @@ variables_num_corr <- significant_variables %>%
 
 variables_num_corr <- variables_num_corr$Variable1
 
-rm(Data_numeric, correlation_matrix, significant_variables, p_values)
+rm(Data_numeric, p_values)
 
+#5.2
 
-print("variables factorielles avec modalit? representant plus de 85% donnees")
-print(var_a_suppr2)
- 
-print("variables factorielles avec plus de 3 modalit? et dont une modalit? repr?sente moins de 15% des donnees")
-print(occurrences3)
+seuil_sign2 <- 0.05
 
+Data_fact <- Data %>% 
+  select_if(is.factor) %>% 
+  select(-y13_BEA_NE)
+
+variables_significatives <- list()
+
+for (i in seq_along(names(Data_fact))) {
+  variable_cible2 <- names(Data_fact)[i]
+  for (j in seq_along(names(Data_fact)[-i])) {
+    variable2 <- names(Data_fact)[-i][j]
+    
+    # Effectuez le test du chi-deux pour chaque paire de variables 
+    chi_squared_result <- tryCatch({
+      chisq.test(table(Data_fact[[variable_cible2]], Data_fact[[variable2]]))
+    }, warning = function(w) {
+      # En cas d'avertissement, effectuer un test du chi-deux exact
+      exact_test <- chisq.test(table(Data_fact[[variable_cible2]], Data_fact[[variable2]]), simulate.p.value = TRUE)
+      return(exact_test)
+    })
+    
+    # Vérifiez si la p-valeur est inférieure à seuil_sign2
+    if (chi_squared_result$p.value < seuil_sign2) {
+      # Stocker les informations sur la variable cible2 et la variable2 ainsi que leur p-value associée
+      variables_significatives[[length(variables_significatives) + 1]] <- list(variable_cible2 = variable_cible2,
+                                                                               variable2 = variable2,
+                                                                               p_value = chi_squared_result$p.value)
+    }
+  }
+}
+
+variables_fact_corr <- do.call(rbind, variables_significatives)
+variables_fact_corr <- as.data.frame(variables_fact_corr)
+
+variables_fact_corr <- variables_fact_corr %>%
+  distinct(variable_cible2, .keep_all = TRUE)
+
+variables_fact_corr <- variables_fact_corr$variable_cible2
+variables_fact_corr <- as.character(variables_fact_corr)
+
+rm(variable_cible2, variable2,i,j, Data_fact)
+
+#### 6 ####
+
+Data_brouillon <- Data %>%
+  select(all_of(variables_fact_corr), all_of(variables_num_corr))
+
+names_br <- names(Data_brouillon)
+
+Data_brouillon <- Data %>%
+  select(-all_of(names_br))
