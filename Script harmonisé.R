@@ -13,7 +13,7 @@ library(factoextra)
 ## CHARGEMENT DES DONNEES ##
 
 # setwd("O:/Annee2/stats/Groupe22/Donnees")
-# setwd("C:/Users/Vito/Desktop/D�p�t Projet Statistique 2A/1.Donnees") # mon dossier (Vito)
+# setwd("C:/Users/Vito/Desktop/D?p?t Projet Statistique 2A/1.Donnees") # mon dossier (Vito)
 
 base_NE_BEA <- readRDS(file="base_NE_X_varY_BEA.RData")
 base_PC_BEA <- readRDS(file="base_PC_X_varY_BEA.RData")
@@ -21,8 +21,8 @@ base_Repro_BEA <- readRDS(file="base_Repro_X_varY_BEA.RData")
 
 ## CHOIX DE LA BASE ## 
 
-# Data <- base_NE_BEA
-# Data_name <- "base_NE_BEA"
+Data <- base_NE_BEA
+Data_name <- "base_NE_BEA"
 # Data <- base_PC_BEA
 # Data_name <- "base_PC_BEA"
 # Data <- base_Repro_BEA
@@ -30,11 +30,11 @@ base_Repro_BEA <- readRDS(file="base_Repro_X_varY_BEA.RData")
 
 ##### Etape 1 : Verification donnees #####
 
-# str(Data, list.len =ncol(Data))
+# str(Data, list.len =30)
 
 # 1.1  Mettre les variables au bon format
 
-Data$y13_BEA_NE <- as.factor(Data$y13_BEA_NE)
+Data[,2] <- as.factor(Data[,2])
 
 ## 1.2 Supprimer donnees NA > 0.15 ##
 
@@ -88,7 +88,15 @@ rm(Data_fact, seuil, occurrences2, base_var_regroup)
 
 #### Etape 1.5 : Regroupement variables ####
 
-# Base PC
+print("Attention au choix de la base")
+
+"██████╗░░█████╗░
+██╔══██╗██╔══██╗
+██████╔╝██║░░╚═╝
+██╔═══╝░██║░░██╗
+██║░░░░░╚█████╔╝
+╚═╝░░░░░░╚════╝░"
+
 
 Data <- subset(Data, select = -c(Biosec_clust_PSE_5levels, T01_T_EXT_3, T01_T_EXT_2, T10_PS_EauDebi_1))
 
@@ -157,7 +165,13 @@ Data$X07x1_AN_CONST5_mean_1 <- factor(
 Data$Label <- factor(ifelse(is.na(Data$Label), NA, 
                             ifelse(Data$Label %in% c(2, 3), "2/3", "1")))
 
-# Base Naisseur Engraisseur
+
+"███╗░░██╗███████╗
+████╗░██║██╔════╝
+██╔██╗██║█████╗░░
+██║╚████║██╔══╝░░
+██║░╚███║███████╗
+╚═╝░░╚══╝╚══════╝"
 
 Data <- subset(Data, select = -c(X12x1_TRP_BAT_6_reg_rec, X12x1_DET_BAT_1_reg_rec, X03x2_OT_repro_1_rec, 
                                  X03x2_OT_repro_2_rec, X03x2_OT_repro_3_rec, X17x3_AGFINADO_1,  Biosec_clust_4levels,
@@ -332,16 +346,21 @@ Data$Mode_Stock_Lit2 <- factor(ifelse(is.na(Data$Mode_Stock_Lit2), NA,
                                       ifelse(Data$Mode_Stock_Lit2 %in% c(1, 2), "1/2", "0")))
 
 
-
-
+"███████╗████████╗░█████╗░██████╗░███████╗ ██████╗░
+██╔════╝╚══██╔══╝██╔══██╗██╔══██╗██╔════╝  ╚════██╗
+█████╗░░░░░██║░░░███████║██████╔╝█████╗░░  ░░███╔═╝
+██╔══╝░░░░░██║░░░██╔══██║██╔═══╝░██╔══╝░░  ██╔══╝░░
+███████╗░░░██║░░░██║░░██║██║░░░░░███████╗  ███████╗
+╚══════╝░░░╚═╝░░░╚═╝░░╚═╝╚═╝░░░░░╚══════╝  ╚══════╝"
 #### Etape 2 : Etude lien var Y et var X ####
 
-# 2 .1 # Significativite variable fact
+# 2 .1 # Significativite variable fact (Nathan)
 
 seuil_sign <- 0.1
 
 Data_fact <- Data %>%
   select_if(is.factor)
+
 variable_cible <- Data_fact$y13_BEA_NE
 autres_variables <- Data_fact[, -1]
 variables_significatives_p <- list()
@@ -364,10 +383,14 @@ for (i in seq_along(autres_variables)) {
 }
 
 variables_sign_fact <- names(variables_significatives_p)
+variables_sign_fact
+
 
 rm(Data_fact, chi_squared_result, seuil_sign, i, variable)
 
-# 2.2 #
+
+
+# 2.2 # Significativite variable num (Maxime)
 
 Data_num <- Data %>% 
   select_if(is.numeric)
@@ -376,35 +399,31 @@ str(Data_num)
 colonnes_numeriques <- names(Data)[sapply(Data, is.numeric)]
 test_raté <-c()
 
-# Assuming colonnes_numeriques is a vector containing the names of numeric columns in Data
+
 for (var in colonnes_numeriques) {
   
-  print(var)
-  
+  #print(var)
   
   # Perform Kruskal-Wallis test
   kruskal_test_result <- kruskal.test(Data[[var]] ~ Data[[2]], data = Data)
-  
-  # Print Kruskal-Wallis test result
+
   #print(kruskal_test_result)
   
-  if (kruskal_test_result$p.value >= 0.1) {
+  if (!is.na(kruskal_test_result$p.value) && kruskal_test_result$p.value >= seuil_sign) {
     test_raté <- unique(c(test_raté, var))  
   }
 }
 
-
 print(test_raté)
 
-variables_changées <- setdiff(colonnes_numeriques, test_raté)
-variables_changées
+variables_a_garder <- setdiff(colonnes_numeriques, test_raté)
+variables_a_garder
 
 
 ### AFFICHER UN HISTOGRAMME
-plot_data <- data.frame(X = Data[["A05_MdTGRIPPE"]], 
+plot_data <- data.frame(X = Data[["A05_MdTGRIPPE"]],  #On peut choisir la variable ici
                         Color = as.factor(Data[[2]]))
 
-# Calculer la moyenne par groupe
 mu <- aggregate(X ~ Color, data = plot_data, mean)
 # Création du graphique
 p <- ggplot(plot_data, aes(x = X, fill = Color)) +
@@ -417,6 +436,13 @@ print(p)
 
 
 
+"███████╗████████╗░█████╗░██████╗░███████╗  ██████╗░
+██╔════╝╚══██╔══╝██╔══██╗██╔══██╗██╔════╝  ╚════██╗
+█████╗░░░░░██║░░░███████║██████╔╝█████╗░░  ░█████╔╝
+██╔══╝░░░░░██║░░░██╔══██║██╔═══╝░██╔══╝░░  ░╚═══██╗
+███████╗░░░██║░░░██║░░██║██║░░░░░███████╗  ██████╔╝
+╚══════╝░░░╚═╝░░░╚═╝░░╚═╝╚═╝░░░░░╚══════╝  ╚═════╝░"
+
 
 #### Etape 6 : Presentation Resultats ####
 
@@ -425,6 +451,6 @@ print(var_a_suppr)
 
 print("variables factorielles avec modalit? representant plus de 85% donnees")
 print(var_a_suppr2)
-
+ 
 print("variables factorielles avec plus de 3 modalit? et dont une modalit? repr?sente moins de 15% des donnees")
 print(occurrences3)
