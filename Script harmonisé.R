@@ -13,7 +13,7 @@ library(factoextra)
 ## CHARGEMENT DES DONNEES ##
 
 # setwd("O:/Annee2/stats/Groupe22/Donnees") # Chemin VM
-setwd("C:/Users/Vito/Desktop/D�p�t Projet Statistique 2A/1.Donnees") # mon dossier (Vito)
+# setwd("C:/Users/Vito/Desktop/Dépôt Projet Statistique 2A/1.Donnees") # mon dossier (Vito)
 # setwd("C:/Users/nsdk1/Desktop/R/Projet_stat/Source") # Chemin perso Nathan
 
 base_NE_BEA <- readRDS(file="base_NE_X_varY_BEA.RData")
@@ -22,11 +22,11 @@ base_Repro_BEA <- readRDS(file="base_Repro_X_varY_BEA.RData")
 
 ## CHOIX DE LA BASE ## 
 
-# Data <- base_NE_BEA
-# Data_name <- "base_NE_BEA"
+Data <- base_NE_BEA
+Data_name <- "base_NE_BEA"
 
-Data <- base_PC_BEA
-Data_name <- "base_PC_BEA"
+# Data <- base_PC_BEA
+# Data_name <- "base_PC_BEA"
 
 # Data <- base_Repro_BEA
 # Data_name <- "base_Repro_BEA"
@@ -378,7 +378,6 @@ Data_fact <- Data %>%
 variable_cible <- Data_fact[,1]
 autres_variables <- Data_fact[, -1]
 variables_significatives_p <- list()
-variable = autres_variables[[1]]
 
 # Effectuez le test du chi-deux pour chaque variable 
 for (i in seq_along(autres_variables)) {
@@ -411,7 +410,7 @@ Data_num <- Data %>%
 str(Data_num)
 
 colonnes_numeriques <- names(Data)[sapply(Data, is.numeric)]
-test_raté <-c()
+test_rate <-c()
 
 
 for (var in colonnes_numeriques) {
@@ -424,13 +423,13 @@ for (var in colonnes_numeriques) {
   #print(kruskal_test_result)
   
   if (!is.na(kruskal_test_result$p.value) && kruskal_test_result$p.value >= seuil_sign) {
-    test_raté <- unique(c(test_raté, var))  
+    test_rate <- unique(c(test_rate, var))  
   }
 }
 
-print(test_raté)
+print(test_rate)
 
-variables_sign_num <- setdiff(colonnes_numeriques, test_raté)
+variables_sign_num <- setdiff(colonnes_numeriques, test_rate)
 variables_sign_num
 
 ### AFFICHER UN HISTOGRAMME
@@ -565,14 +564,33 @@ variables_sign_num2
 Data <- Data %>%
   select(1:2, all_of(variables_sign_fact2), all_of(variables_sign_num2))
 
-#### Etape 6 : Presentation Resultats ####
 
-print("variables avec plus de 15% de NA")
-print(var_a_suppr)
+#### Etape 5 : Etude des corrélations entre les variables X retenues à p<0.1 (?) ####
 
-print("variables factorielles avec modalit? representant plus de 85% donnees")
-print(var_a_suppr2)
- 
-print("variables factorielles avec plus de 3 modalit? et dont une modalit? repr?sente moins de 15% des donnees")
-print(occurrences3)
- : 
+#5.1 Numérique
+
+Data_numeric <- Data %>%
+  select_if(is.numeric)
+
+#Matrice corr
+correlation_matrix <- rcorr(as.matrix(Data_numeric))
+
+# Extraire les p-values
+p_values <- correlation_matrix$P
+
+#Extraire couple variable, corrélation < 0.05
+significant_variables <- which(p_values < 0.05, arr.ind = TRUE)
+significant_variables <- data.frame(
+  Variable1 = rownames(p_values)[significant_variables[, 2]],
+  Variable2 = colnames(p_values)[significant_variables[, 1]],
+  P_Value = p_values[significant_variables]
+)
+
+variables_num_corr <- significant_variables %>%
+  distinct(Variable1, .keep_all = TRUE)
+
+variables_num_corr <- variables_num_corr$Variable1
+
+rm(Data_numeric, correlation_matrix, significant_variables, p_values)
+
+
