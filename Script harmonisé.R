@@ -14,7 +14,7 @@ library(factoextra)
 
 # setwd("O:/Annee2/stats/Groupe22/Donnees") # Chemin VM
 # setwd("C:/Users/Vito/Desktop/Dépôt Projet Statistique 2A/1.Donnees") # mon dossier (Vito)
-# setwd("C:/Users/nsdk1/Desktop/R/Projet_stat/Source") # Chemin perso Nathan
+setwd("C:/Users/nsdk1/Desktop/R/Projet_stat/Source") # Chemin perso Nathan
 
 base_NE_BEA <- readRDS(file="base_NE_X_varY_BEA.RData")
 base_PC_BEA <- readRDS(file="base_PC_X_varY_BEA.RData")
@@ -400,7 +400,7 @@ variables_sign_fact <- names(variables_significatives_p)
 variables_sign_fact
 
 
-rm(Data_fact, chi_squared_result, i, variable, variable_cible)
+rm(Data_fact, chi_squared_result, i, variable, variable_cible, autres_variables, variables_significatives_p)
 
 
 # 2.2 # Significativite variable num (Maxime)
@@ -513,7 +513,7 @@ variables_sign_fact2 <- names(variables_significatives_p)
 variables_sign_fact2
 
 
-rm(Data_fact, chi_squared_result, i, variable, variable_cible)
+rm(Data_fact, chi_squared_result, i, variable, variable_cible, autres_variables, variables_significatives_p)
 
 
 # 4.2 # Significativite variable num (Maxime)
@@ -591,7 +591,7 @@ variables_num_corr <- significant_variables %>%
 
 variables_num_corr <- variables_num_corr$Variable1
 
-rm(Data_numeric, p_values)
+rm(Data_numeric, p_values, correlation_matrix)
 
 #5.2
 
@@ -599,7 +599,7 @@ seuil_sign2 <- 0.05
 
 Data_fact <- Data %>% 
   select_if(is.factor) %>% 
-  select(-y13_BEA_NE)
+  select(-1)
 
 variables_significatives <- list()
 
