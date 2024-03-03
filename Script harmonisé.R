@@ -7,6 +7,8 @@ set.seed(3011)
 
 library(readxl)
 library(dplyr)
+library(FactoMineR)
+library(factoextra)
 
 ## CHARGEMENT DES DONNEES ##
 
@@ -19,8 +21,8 @@ base_Repro_BEA <- readRDS(file="base_Repro_X_varY_BEA.RData")
 
 ## CHOIX DE LA BASE ## 
 
-Data <- base_NE_BEA
-Data_name <- "base_NE_BEA"
+# Data <- base_NE_BEA
+# Data_name <- "base_NE_BEA"
 # Data <- base_PC_BEA
 # Data_name <- "base_PC_BEA"
 # Data <- base_Repro_BEA
