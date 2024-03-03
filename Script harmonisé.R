@@ -24,10 +24,12 @@ base_Repro_BEA <- readRDS(file="base_Repro_X_varY_BEA.RData")
 
 # Data <- base_NE_BEA
 # Data_name <- "base_NE_BEA"
-Data <- base_PC_BEA
-Data_name <- "base_PC_BEA"
-# Data <- base_Repro_BEA
-# Data_name <- "base_Repro_BEA"
+
+# Data <- base_PC_BEA
+# Data_name <- "base_PC_BEA"
+
+Data <- base_Repro_BEA
+Data_name <- "base_Repro_BEA"
 
 ##### Etape 1 : Verification donnees #####
 
@@ -373,7 +375,7 @@ seuil_sign <- 0.1
 Data_fact <- Data %>%
   select_if(is.factor)
 
-variable_cible <- Data_fact[,2]
+variable_cible <- Data_fact[,1]
 autres_variables <- Data_fact[, -1]
 variables_significatives_p <- list()
 variable = autres_variables[[1]]
@@ -487,7 +489,7 @@ seuil_sign <- 0.1
 Data_fact <- Data %>%
   select_if(is.factor)
 
-variable_cible <- Data_fact$y13_BEA_NE
+variable_cible <- Data_fact[,1]
 autres_variables <- Data_fact[, -1]
 variables_significatives_p <- list()
 
@@ -545,23 +547,23 @@ variables_sign_num2 <- setdiff(colonnes_numeriques, test_raté)
 variables_sign_num2
 
 ### AFFICHER UN HISTOGRAMME
-plot_data <- data.frame(X = Data[["A05_MdTGRIPPE"]],  #On peut choisir la variable ici
-                        Color = as.factor(Data[[2]]))
-
-mu <- aggregate(X ~ Color, data = plot_data, mean)
+# plot_data <- data.frame(X = Data[["A05_MdTGRIPPE"]],  #On peut choisir la variable ici
+#                         Color = as.factor(Data[[2]]))
+# 
+# mu <- aggregate(X ~ Color, data = plot_data, mean)
 # Création du graphique
-p <- ggplot(plot_data, aes(x = X, fill = Color)) +
-  geom_histogram(color = "white", position = "stack", bins = 50) +
-  labs(x = "A03_sdSeroTTg", y = "Fréquence") +   
-  geom_vline(data = mu, aes(xintercept = X, color = Color), alpha = 0.8, linetype = "dashed") +
-  geom_text(data = mu, aes(x = X + 0.1, y = 30, label = paste("Moyenne:", round(X, 2))), color = "black", size = 3, vjust = -1) +
-  theme_minimal()
-print(p)
+# p <- ggplot(plot_data, aes(x = X, fill = Color)) +
+#   geom_histogram(color = "white", position = "stack", bins = 50) +
+#   labs(x = "A03_sdSeroTTg", y = "Fréquence") +   
+#   geom_vline(data = mu, aes(xintercept = X, color = Color), alpha = 0.8, linetype = "dashed") +
+#   geom_text(data = mu, aes(x = X + 0.1, y = 30, label = paste("Moyenne:", round(X, 2))), color = "black", size = 3, vjust = -1) +
+#   theme_minimal()
+# print(p)
 
-## 2.3 ## Base avec variables significative
+## 4.3 ## Base avec variables significative
 
-Data <- Data %>% 
-  select(CODE_ELEVAGE,y13_BEA_NE,all_of(variables_sign_fact2),all_of(variables_sign_num2))
+Data <- Data %>%
+  select(1:2, all_of(variables_sign_fact2), all_of(variables_sign_num2))
 
 #### Etape 6 : Presentation Resultats ####
 
