@@ -12,9 +12,9 @@ library(factoextra)
 
 ## CHARGEMENT DES DONNEES ##
 
-# setwd("O:/Annee2/stats/Groupe22/Donnees")
+# setwd("O:/Annee2/stats/Groupe22/Donnees") # Chemin VM
 # setwd("C:/Users/Vito/Desktop/D?p?t Projet Statistique 2A/1.Donnees") # mon dossier (Vito)
-setwd("C:/Users/nsdk1/Desktop/R/Projet_stat/Source")
+# setwd("C:/Users/nsdk1/Desktop/R/Projet_stat/Source") # Chemin perso Nathan
 
 base_NE_BEA <- readRDS(file="base_NE_X_varY_BEA.RData")
 base_PC_BEA <- readRDS(file="base_PC_X_varY_BEA.RData")
