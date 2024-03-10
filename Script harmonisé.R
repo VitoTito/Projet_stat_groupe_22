@@ -5,6 +5,7 @@ set.seed(3011)
 
 ## CHARGEMENT DES PACKAGES ##
 
+library(Hmisc)
 library(readxl)
 library(dplyr)
 library(FactoMineR)
@@ -22,11 +23,11 @@ base_Repro_BEA <- readRDS(file="base_Repro_X_varY_BEA.RData")
 
 ## CHOIX DE LA BASE ## 
 
-Data <- base_NE_BEA
-Data_name <- "base_NE_BEA"
+# Data <- base_NE_BEA
+# Data_name <- "base_NE_BEA"
 
-# Data <- base_PC_BEA
-# Data_name <- "base_PC_BEA"
+Data <- base_PC_BEA
+Data_name <- "base_PC_BEA" 
 
 # Data <- base_Repro_BEA
 # Data_name <- "base_Repro_BEA"
@@ -640,10 +641,10 @@ rm(variable_cible2, variable2,i,j, Data_fact)
 
 #### 6 ####
 
-Data_brouillon <- Data %>%
-  select(all_of(variables_fact_corr), all_of(variables_num_corr))
-
-names_br <- names(Data_brouillon)
-
-Data_brouillon <- Data %>%
-  select(-all_of(names_br))
+# Data_brouillon <- Data %>%
+#   select(all_of(variables_fact_corr), all_of(variables_num_corr))
+# 
+# names_br <- names(Data_brouillon)
+# 
+# Data_brouillon <- Data %>%
+#   select(-all_of(names_br))
