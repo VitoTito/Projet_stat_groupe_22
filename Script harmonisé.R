@@ -10,6 +10,7 @@ library(readxl)
 library(dplyr)
 library(FactoMineR)
 library(factoextra)
+library(vcd)
 
 ## CHARGEMENT DES DONNEES ##
 
@@ -27,7 +28,7 @@ Data <- base_NE_BEA
 Data_name <- "base_NE_BEA"
 
 # Data <- base_PC_BEA
-# Data_name <- "base_PC_BEA" 
+# Data_name <- "base_PC_BEA"
 
 # Data <- base_Repro_BEA
 # Data_name <- "base_Repro_BEA"
@@ -423,16 +424,13 @@ for (i in seq_along(autres_variables)) {
   }
 }
 
-
-pval_fact_significativite<- data.frame(var= names(autres_variables),
-                                      p_val_fact_etape2=p_val_fact_etape2)
-
-
-
 variables_sign_fact <- names(variables_significatives_p)
-variables_sign_fact
 
+#p_value
+pval_fact_sign_e2<- data.frame(var= names(autres_variables),
+                               p_val_fact_etape2=p_val_fact_etape2)
 
+rm()
 rm(Data_fact, chi_squared_result, i, variable, variable_cible, autres_variables, variables_significatives_p)
 
 
@@ -459,13 +457,12 @@ for (var in colonnes_numeriques) {
   }
 }
 
-pval_num_significativite<- data.frame(var= colonnes_numeriques,
-                                      p_val_etape2=p_val_etape2)
-
-print(test_rate)
-
 variables_sign_num <- setdiff(colonnes_numeriques, test_rate)
-variables_sign_num
+
+#p_value
+pval_num_sign_e2<- data.frame(var= colonnes_numeriques,
+                              p_val_etape2=p_val_etape2)
+
 
 rm(Data_num, kruskal_test_result, test_rate)
 
@@ -549,19 +546,15 @@ for (i in seq_along(autres_variables)) {
     variables_significatives_p[[names(autres_variables)[i]]] <- chi_squared_result$p.value
   }
 }
-
-
-pval_fact_significativite<- data.frame(var= names(autres_variables),
-                                       p_val_fact_etape2=p_val_fact_etape2,
-                                       p_val_fact_etape4=p_val_fact_etape4)
-View(pval_fact_significativite)
-
-
-
 variables_sign_fact2 <- names(variables_significatives_p)
-variables_sign_fact2
 
+#p_value
+pval_fact_sign_e4<- data.frame(var= names(autres_variables),
+                               p_val_fact_etape4=p_val_fact_etape4)
 
+pval_fact_sign <- left_join(pval_fact_sign_e4, pval_fact_sign_e2)
+
+rm(pval_fact_sign_e2,pval_fact_sign_e4,p_val_fact_etape2,p_val_fact_etape4)
 rm(Data_fact, chi_squared_result, i, variable, variable_cible, autres_variables, variables_significatives_p)
 
 
@@ -588,17 +581,14 @@ for (var in colonnes_numeriques) {
   }
 }
 
-pval_num_significativite<- data.frame(var= colonnes_numeriques,
-                                      p_val_etape2=p_val_etape2,
-                                      p_val_etape4=p_val_etape4)
-View(pval_num_significativite)
-
-
-print(test_rate)
-
 variables_sign_num2 <- setdiff(colonnes_numeriques, test_rate)
-variables_sign_num2
 
+#p_value
+pval_num_sign_e4<- data.frame(var= colonnes_numeriques,
+                              p_val_etape4=p_val_etape4)
+pval_num_sign <- left_join(pval_num_sign_e4, pval_num_sign_e2)
+
+rm(pval_num_sign_e2,pval_num_sign_e4,p_val_etape2,p_val_etape4)
 rm(Data_num, kruskal_test_result, test_rate)
 
 ### AFFICHER UN HISTOGRAMME
@@ -619,23 +609,17 @@ rm(Data_num, kruskal_test_result, test_rate)
 
 #4.3.1 Factorielle
 
-elemts_uniq_fact_e2 <- setdiff(variables_sign_fact, variables_sign_fact2)
-elemts_uniq_fact_e2 <- pval_fact_significativite %>%
-  filter(var %in% elemts_uniq_fact_e2)
-
-elemts_uniq_fact_e4 <- setdiff(variables_sign_fact2, variables_sign_fact)
-elemts_uniq_fact_e4 <- pval_fact_significativite %>%
-  filter(var %in% elemts_uniq_fact_e4)
+diff_e2_e4_fact <- setdiff(variables_sign_fact, variables_sign_fact2)
+diff_e2_e4_fact <- pval_fact_sign %>%
+  filter(var %in% diff_e2_e4_fact)
 
 #4.3.1 Numérique
 
-elemts_uniq_num_e2 <- setdiff(variables_sign_num, variables_sign_num2)
-elemts_uniq_num_e2 <- pval_fact_significativite %>%
-  filter(var %in% elemts_uniq_num_e2)
+diff_e2_e4_num<- setdiff(variables_sign_num, variables_sign_num2)
+diff_e2_e4_num <- pval_fact_sign %>%
+  filter(var %in% diff_e2_e4_fact)
 
-elemts_uniq_num_e4 <- setdiff(variables_sign_num2, variables_sign_num)
-elemts_uniq_num_e4 <- pval_num_significativite %>%
-  filter(var %in% elemts_uniq_num_e4)
+rm(pval_fact_sign,pval_num_sign,var)
 
 ## 4.4 ## Base avec variables significative
 
@@ -647,7 +631,6 @@ Data <- Data %>%
 Data_fact <- Data %>% 
   select(is.factor)
 
-
 Variable_y <- names(Data_fact)[1]
 
 for (col in names(Data_fact)[-1]) {
@@ -656,7 +639,7 @@ for (col in names(Data_fact)[-1]) {
   print(contingency_table)
 }
 
-rm(Variable_y,col, contingency_table)
+rm(Variable_y,col, contingency_table,Data_fact)
 
 
 #### Etape 5 : Etude des corrélations entre les variables X retenues à p<0.1 (?) ####
