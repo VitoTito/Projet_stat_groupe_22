@@ -24,11 +24,11 @@ base_Repro_BEA <- readRDS(file="base_Repro_X_varY_BEA.RData")
 
 ## CHOIX DE LA BASE ## 
 
-Data <- base_NE_BEA
-Data_name <- "base_NE_BEA"
+# Data <- base_NE_BEA
+# Data_name <- "base_NE_BEA"
 
-# Data <- base_PC_BEA
-# Data_name <- "base_PC_BEA"
+Data <- base_PC_BEA
+Data_name <- "base_PC_BEA"
 
 # Data <- base_Repro_BEA
 # Data_name <- "base_Repro_BEA"
@@ -643,8 +643,7 @@ rm(Variable_y,col, contingency_table,Data_fact)
 
 
 #### Etape 5 : Etude des corrélations entre les variables X retenues à p<0.1 (?) ####
-
-#5.1 Numérique
+#### 5.1 Numérique ####
 
 Data_numeric <- Data %>%
   select_if(is.numeric)
@@ -668,9 +667,30 @@ variables_num_corr <- significant_variables %>%
 
 variables_num_corr <- variables_num_corr$Variable1
 
-rm(Data_numeric, p_values, correlation_matrix)
+#p_value
+Data_numeric<- Data %>% 
+  select(all_of(variables_num_corr))
 
-#5.2
+if (ncol(Data_numeric) == 0) {
+  print("La base de données est vide. Aucun code ne sera exécuté.")
+} else {
+  correlation_matrix <- rcorr(as.matrix(Data_numeric))
+ 
+  # Extraire les p-values
+  p_values <- correlation_matrix$P
+  
+  # Appliquer la condition pour ne garder que les valeurs < 0.05
+  p_values[p_values >= 0.05] <- ''
+  p_values <- apply(p_values, c(1, 2), as.numeric)
+  p_values <- round(p_values, digits = 10)
+  p_values[is.na(p_values)] <- ''
+  p_values_num <- p_values
+}
+
+rm(p_values)
+rm(Data_numeric, correlation_matrix)
+
+#### 5.2 Factorielle ####
 
 seuil_sign2 <- 0.05
 
@@ -704,24 +724,53 @@ for (i in seq_along(names(Data_fact))) {
   }
 }
 
-variables_fact_corr <- do.call(rbind, variables_significatives)
-variables_fact_corr <- as.data.frame(variables_fact_corr)
+variables_significatives <- do.call(rbind, variables_significatives)
+variables_significatives <- as.data.frame(variables_significatives)
 
-variables_fact_corr <- variables_fact_corr %>%
+variables_fact_corr <- variables_significatives %>%
   distinct(variable_cible2, .keep_all = TRUE)
 
 variables_fact_corr <- variables_fact_corr$variable_cible2
 variables_fact_corr <- as.character(variables_fact_corr)
 
 rm(variable_cible2, variable2,i,j, Data_fact)
-rm(var, colonnes_numeriques)
+rm(colonnes_numeriques)
 
-#### 6 ####
+#p_value
 
-Data_brouillon <- Data %>%
-  select(all_of(variables_fact_corr), all_of(variables_num_corr))
+Data_fact <- Data %>% 
+  select(all_of(variables_fact_corr))
 
-names_br <- names(Data_brouillon)
+if (ncol(Data_fact) == 0) {
+  print("La base de données est vide. Aucun code ne sera exécuté.")
+} else { 
+  # Initialiser une matrice pour stocker les p-values des tests du chi-deux
+  p_values_contingency <- matrix(NA, nrow = ncol(Data_fact), ncol = ncol(Data_fact), dimnames = list(names(Data_fact), names(Data_fact)))
+  
+  # Calculer les p-values pour chaque paire de variables cat?gorielles
+  for (i in 1:(ncol(Data_fact) - 1)) {
+    for (j in (i + 1):ncol(Data_fact)) {
+      # Effectuer le test du chi-deux pour chaque paire de variables 
+      chi_squared_result <- tryCatch({
+        chisq.test(table(Data_fact[[i]], Data_fact[[j]]))
+      }, warning = function(w) {
+        # En cas d'avertissement, effectuer un test du chi-deux exact
+        exact_test <- chisq.test(table(Data_fact[[i]], Data_fact[[j]]), simulate.p.value = TRUE)
+        return(exact_test)
+      })
+      
+      # Stocker la p-value dans la matrice des p-values
+      p_values_contingency[i, j] <- chi_squared_result$p.value
+      p_values_contingency[j, i] <- chi_squared_result$p.value  # La matrice est sym?trique
+    }
+  }
+  p_values_fact <- p_values_contingency
+  p_values_fact[p_values_fact >= 0.05] <- ''
+  p_values_fact <- apply(p_values_fact, c(1, 2), as.numeric)
+  p_values_fact <- round(p_values_fact, digits = 10)
+  p_values_fact[is.na(p_values_fact)] <- ''
+  }
 
-Data_brouillon <- Data %>%
-  select(-all_of(names_br))
+rm(Data_fact, p_values_contingency, i, j, chi_squared_result)
+
+#### 6 #### Resultat / Export 
