@@ -23,11 +23,11 @@ base_Repro_BEA <- readRDS(file="base_Repro_X_varY_BEA.RData")
 
 ## CHOIX DE LA BASE ## 
 
-# Data <- base_NE_BEA
-# Data_name <- "base_NE_BEA"
+Data <- base_NE_BEA
+Data_name <- "base_NE_BEA"
 
-Data <- base_PC_BEA
-Data_name <- "base_PC_BEA" 
+# Data <- base_PC_BEA
+# Data_name <- "base_PC_BEA" 
 
 # Data <- base_Repro_BEA
 # Data_name <- "base_Repro_BEA"
@@ -87,7 +87,7 @@ var_a_potent_regroup <- names(occurrences2)[sapply(occurrences2, function(x) any
 base_var_regroup <- Data[, (names(Data) %in% var_a_potent_regroup)] 
 occurrences3 <- sapply(base_var_regroup, function(x) table(x))
 
-rm(Data_fact, seuil, occurrences2, base_var_regroup)
+rm(Data_fact, seuil, occurrences2, base_var_regroup, occurrences3)
 
 
 ## Etape 1.5 : Regroupement variables ##
@@ -433,6 +433,8 @@ print(test_rate)
 variables_sign_num <- setdiff(colonnes_numeriques, test_rate)
 variables_sign_num
 
+rm(Data_num, kruskal_test_result, test_rate)
+
 ### AFFICHER UN HISTOGRAMME
 # plot_data <- data.frame(X = Data[["A05_MdTGRIPPE"]],  #On peut choisir la variable ici
 #                         Color = as.factor(Data[[2]]))
@@ -524,7 +526,7 @@ Data_num <- Data %>%
 str(Data_num)
 
 colonnes_numeriques <- names(Data)[sapply(Data, is.numeric)]
-test_raté <-c()
+test_rate <-c()
 
 
 for (var in colonnes_numeriques) {
@@ -537,14 +539,16 @@ for (var in colonnes_numeriques) {
   #print(kruskal_test_result)
   
   if (!is.na(kruskal_test_result$p.value) && kruskal_test_result$p.value >= seuil_sign) {
-    test_raté <- unique(c(test_raté, var))  
+    test_rate <- unique(c(test_rate, var))  
   }
 }
 
-print(test_raté)
+print(test_rate)
 
-variables_sign_num2 <- setdiff(colonnes_numeriques, test_raté)
+variables_sign_num2 <- setdiff(colonnes_numeriques, test_rate)
 variables_sign_num2
+
+rm(Data_num, kruskal_test_result, test_rate)
 
 ### AFFICHER UN HISTOGRAMME
 # plot_data <- data.frame(X = Data[["A05_MdTGRIPPE"]],  #On peut choisir la variable ici
@@ -638,6 +642,7 @@ variables_fact_corr <- variables_fact_corr$variable_cible2
 variables_fact_corr <- as.character(variables_fact_corr)
 
 rm(variable_cible2, variable2,i,j, Data_fact)
+rm(var, colonnes_numeriques)
 
 #### 6 ####
 
