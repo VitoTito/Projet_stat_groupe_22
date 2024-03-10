@@ -484,9 +484,9 @@ rm(Data_num, kruskal_test_result, test_rate)
 #  print(p)
 
 ## 2.3 ## Base avec variables significative
-Data_significative <- Data %>%
-  select(1:2, all_of(variables_sign_fact), all_of(variables_sign_num))
 
+Data <- Data %>%
+  select(1:2, all_of(variables_sign_fact), all_of(variables_sign_num))
 
 "███████╗████████╗░█████╗░██████╗░███████╗  ██████╗░
 ██╔════╝╚══██╔══╝██╔══██╗██╔══██╗██╔════╝  ╚════██╗
@@ -615,16 +615,48 @@ rm(Data_num, kruskal_test_result, test_rate)
 #   theme_minimal()
 # print(p)
 
-## 4.3 ## Base avec variables significative
+# 4.3 Différence étape 2 / 4 
+
+#4.3.1 Factorielle
+
+elemts_uniq_fact_e2 <- setdiff(variables_sign_fact, variables_sign_fact2)
+elemts_uniq_fact_e2 <- pval_fact_significativite %>%
+  filter(var %in% elemts_uniq_fact_e2)
+
+elemts_uniq_fact_e4 <- setdiff(variables_sign_fact2, variables_sign_fact)
+elemts_uniq_fact_e4 <- pval_fact_significativite %>%
+  filter(var %in% elemts_uniq_fact_e4)
+
+#4.3.1 Numérique
+
+elemts_uniq_num_e2 <- setdiff(variables_sign_num, variables_sign_num2)
+elemts_uniq_num_e2 <- pval_fact_significativite %>%
+  filter(var %in% elemts_uniq_num_e2)
+
+elemts_uniq_num_e4 <- setdiff(variables_sign_num2, variables_sign_num)
+elemts_uniq_num_e4 <- pval_num_significativite %>%
+  filter(var %in% elemts_uniq_num_e4)
+
+## 4.4 ## Base avec variables significative
 
 Data <- Data %>%
   select(1:2, all_of(variables_sign_fact2), all_of(variables_sign_num2))
 
-#
-# Filtrer par rapport à l'étape 2 et 4 ici
-#
-#
+#4.5 Tableau de contingence 
 
+Data_fact <- Data %>% 
+  select(is.factor)
+
+
+Variable_y <- names(Data_fact)[1]
+
+for (col in names(Data_fact)[-1]) {
+  contingency_table <- table(Data_fact[[Variable_y]], Data_fact[[col]])
+  print(paste("Tableau de contingence pour", Variable_y, "et", col))
+  print(contingency_table)
+}
+
+rm(Variable_y,col, contingency_table)
 
 
 #### Etape 5 : Etude des corrélations entre les variables X retenues à p<0.1 (?) ####
