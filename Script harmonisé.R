@@ -76,6 +76,27 @@ Data <- Data %>% # Filtrage
 
 rm(Data_fact,occurrences, seuil2)
 
+
+
+# Et pour les numeriques dont la variance est nulle : 
+Data_num <- Data %>% 
+  select_if(is.numeric)
+
+colonnes_numeriques <- names(Data_num)
+var_num_a_suppr<-c()
+
+for (col in colonnes_numeriques){
+  if (var(Data_num[[col]], na.rm=TRUE) ==0) {
+    var_num_a_suppr <- c(var_num_a_suppr,col)
+  }}
+
+Data <- Data %>% # Filtrage
+  select(-all_of(var_num_a_suppr))
+
+
+rm(var_num_a_suppr, Data_num, colonnes_numeriques)
+
+
 ## 1.4 Potentiel regroupements ##
 
 Data_fact <- Data %>% 
@@ -379,6 +400,8 @@ Data_fact <- Data %>%
 variable_cible <- Data_fact[,1]
 autres_variables <- Data_fact[, -1]
 variables_significatives_p <- list()
+p_val_fact_etape2<-c()
+
 
 # Effectuez le test du chi-deux pour chaque variable 
 for (i in seq_along(autres_variables)) {
@@ -391,11 +414,20 @@ for (i in seq_along(autres_variables)) {
     return(exact_test)
   })
   
+  p_val_fact_etape2<-c(p_val_fact_etape2,chi_squared_result$p.value)
+  
+  
   # Verifiez si la p-valeur est inferieure 0.1
   if (chi_squared_result$p.value < seuil_sign) {
     variables_significatives_p[[names(autres_variables)[i]]] <- chi_squared_result$p.value
   }
 }
+
+
+pval_fact_significativite<- data.frame(var= names(autres_variables),
+                                      p_val_fact_etape2=p_val_fact_etape2)
+
+
 
 variables_sign_fact <- names(variables_significatives_p)
 variables_sign_fact
@@ -408,25 +440,27 @@ rm(Data_fact, chi_squared_result, i, variable, variable_cible, autres_variables,
 
 Data_num <- Data %>% 
   select_if(is.numeric)
-str(Data_num)
+# str(Data_num)
 
 colonnes_numeriques <- names(Data)[sapply(Data, is.numeric)]
 test_rate <-c()
-
+p_val_etape2 <- c()
 
 for (var in colonnes_numeriques) {
   
-  #print(var)
-  
   # Perform Kruskal-Wallis test
-  kruskal_test_result <- kruskal.test(Data[[var]] ~ Data[[2]], data = Data)
+  kruskal_test_result <- kruskal.test(Data[[2]] ~ Data[[var]], data = Data)
 
-  #print(kruskal_test_result)
+  p_val_etape2 <- c(p_val_etape2, kruskal_test_result$p.value)  
   
-  if (!is.na(kruskal_test_result$p.value) && kruskal_test_result$p.value >= seuil_sign) {
+  if (kruskal_test_result$p.value >= seuil_sign) {
     test_rate <- unique(c(test_rate, var))  
+
   }
 }
+
+pval_num_significativite<- data.frame(var= colonnes_numeriques,
+                                      p_val_etape2=p_val_etape2)
 
 print(test_rate)
 
@@ -435,23 +469,22 @@ variables_sign_num
 
 rm(Data_num, kruskal_test_result, test_rate)
 
-### AFFICHER UN HISTOGRAMME
-# plot_data <- data.frame(X = Data[["A05_MdTGRIPPE"]],  #On peut choisir la variable ici
-#                         Color = as.factor(Data[[2]]))
-
+# ### AFFICHER UN HISTOGRAMME
+# plot_data <- data.frame(X = Data[["A03_MdSeroElTgPP"]],  #On peut choisir la variable ici
+#                          Color = as.factor(Data[[2]]))
+# 
 # mu <- aggregate(X ~ Color, data = plot_data, mean)
-# Création du graphique
-# p <- ggplot(plot_data, aes(x = X, fill = Color)) +
-#   geom_histogram(color = "white", position = "stack", bins = 50) +
-#   labs(x = "A03_sdSeroTTg", y = "Fréquence") +   
-#   geom_vline(data = mu, aes(xintercept = X, color = Color), alpha = 0.8, linetype = "dashed") +
-#   geom_text(data = mu, aes(x = X + 0.1, y = 30, label = paste("Moyenne:", round(X, 2))), color = "black", size = 3, vjust = -1) +
-#   theme_minimal()
-# print(p)
+# #Création du graphique
+#  p <- ggplot(plot_data, aes(x = X, fill = Color)) +
+#    geom_histogram(color = "white", position = "stack", bins = 50) +
+#    labs(x = "A03_sdSeroTTg", y = "Fréquence") +
+#    geom_vline(data = mu, aes(xintercept = X, color = Color), alpha = 0.8, linetype = "dashed") +
+#    geom_text(data = mu, aes(x = X + 0.1, y = 30, label = paste("Moyenne:", round(X, 2))), color = "black", size = 3, vjust = -1) +
+#    theme_minimal()
+#  print(p)
 
 ## 2.3 ## Base avec variables significative
-
-Data <- Data %>%
+Data_significative <- Data %>%
   select(1:2, all_of(variables_sign_fact), all_of(variables_sign_num))
 
 
@@ -494,6 +527,8 @@ Data_fact <- Data %>%
 variable_cible <- Data_fact[,1]
 autres_variables <- Data_fact[, -1]
 variables_significatives_p <- list()
+p_val_fact_etape4<-c()
+
 
 # Effectuez le test du chi-deux pour chaque variable 
 for (i in seq_along(autres_variables)) {
@@ -506,11 +541,22 @@ for (i in seq_along(autres_variables)) {
     return(exact_test)
   })
   
+  p_val_fact_etape4<-c(p_val_fact_etape4,chi_squared_result$p.value)
+  
+  
   # Verifiez si la p-valeur est inferieure 0.1
   if (chi_squared_result$p.value < seuil_sign) {
     variables_significatives_p[[names(autres_variables)[i]]] <- chi_squared_result$p.value
   }
 }
+
+
+pval_fact_significativite<- data.frame(var= names(autres_variables),
+                                       p_val_fact_etape2=p_val_fact_etape2,
+                                       p_val_fact_etape4=p_val_fact_etape4)
+View(pval_fact_significativite)
+
+
 
 variables_sign_fact2 <- names(variables_significatives_p)
 variables_sign_fact2
@@ -523,25 +569,30 @@ rm(Data_fact, chi_squared_result, i, variable, variable_cible, autres_variables,
 
 Data_num <- Data %>% 
   select_if(is.numeric)
-str(Data_num)
+# str(Data_num)
 
-colonnes_numeriques <- names(Data)[sapply(Data, is.numeric)]
+colonnes_numeriques <- names(Data_num)
 test_rate <-c()
-
+p_val_etape4 <- c()
 
 for (var in colonnes_numeriques) {
   
-  #print(var)
-  
   # Perform Kruskal-Wallis test
-  kruskal_test_result <- kruskal.test(Data[[var]] ~ Data[[2]], data = Data)
+  kruskal_test_result <- kruskal.test(Data[[2]] ~ Data[[var]], data = Data)
   
-  #print(kruskal_test_result)
+  p_val_etape4 <- c(p_val_etape4, kruskal_test_result$p.value)  
   
-  if (!is.na(kruskal_test_result$p.value) && kruskal_test_result$p.value >= seuil_sign) {
+  if (kruskal_test_result$p.value >= seuil_sign) {
     test_rate <- unique(c(test_rate, var))  
+    
   }
 }
+
+pval_num_significativite<- data.frame(var= colonnes_numeriques,
+                                      p_val_etape2=p_val_etape2,
+                                      p_val_etape4=p_val_etape4)
+View(pval_num_significativite)
+
 
 print(test_rate)
 
@@ -568,6 +619,12 @@ rm(Data_num, kruskal_test_result, test_rate)
 
 Data <- Data %>%
   select(1:2, all_of(variables_sign_fact2), all_of(variables_sign_num2))
+
+#
+# Filtrer par rapport à l'étape 2 et 4 ici
+#
+#
+
 
 
 #### Etape 5 : Etude des corrélations entre les variables X retenues à p<0.1 (?) ####
@@ -632,10 +689,10 @@ for (i in seq_along(names(Data_fact))) {
   }
 }
 
-variables_significatives <- do.call(rbind, variables_significatives)
-variables_significatives <- as.data.frame(variables_significatives)
+variables_fact_corr <- do.call(rbind, variables_significatives)
+variables_fact_corr <- as.data.frame(variables_fact_corr)
 
-variables_fact_corr <- variables_significatives %>%
+variables_fact_corr <- variables_fact_corr %>%
   distinct(variable_cible2, .keep_all = TRUE)
 
 variables_fact_corr <- variables_fact_corr$variable_cible2
@@ -646,10 +703,10 @@ rm(var, colonnes_numeriques)
 
 #### 6 ####
 
-# Data_brouillon <- Data %>%
-#   select(all_of(variables_fact_corr), all_of(variables_num_corr))
-# 
-# names_br <- names(Data_brouillon)
-# 
-# Data_brouillon <- Data %>%
-#   select(-all_of(names_br))
+Data_brouillon <- Data %>%
+  select(all_of(variables_fact_corr), all_of(variables_num_corr))
+
+names_br <- names(Data_brouillon)
+
+Data_brouillon <- Data %>%
+  select(-all_of(names_br))
