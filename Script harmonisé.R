@@ -632,10 +632,10 @@ for (i in seq_along(names(Data_fact))) {
   }
 }
 
-variables_fact_corr <- do.call(rbind, variables_significatives)
-variables_fact_corr <- as.data.frame(variables_fact_corr)
+variables_significatives <- do.call(rbind, variables_significatives)
+variables_significatives <- as.data.frame(variables_significatives)
 
-variables_fact_corr <- variables_fact_corr %>%
+variables_fact_corr <- variables_significatives %>%
   distinct(variable_cible2, .keep_all = TRUE)
 
 variables_fact_corr <- variables_fact_corr$variable_cible2
