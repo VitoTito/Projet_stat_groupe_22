@@ -11,6 +11,7 @@ library(dplyr)
 library(FactoMineR)
 library(factoextra)
 library(vcd)
+library(openxlsx)
 
 ## CHARGEMENT DES DONNEES ##
 
@@ -24,11 +25,11 @@ base_Repro_BEA <- readRDS(file="base_Repro_X_varY_BEA.RData")
 
 ## CHOIX DE LA BASE ## 
 
-# Data <- base_NE_BEA
-# Data_name <- "base_NE_BEA"
+Data <- base_NE_BEA
+Data_name <- "base_NE_BEA"
 
-Data <- base_PC_BEA
-Data_name <- "base_PC_BEA"
+# Data <- base_PC_BEA
+# Data_name <- "base_PC_BEA"
 
 # Data <- base_Repro_BEA
 # Data_name <- "base_Repro_BEA"
@@ -621,23 +622,26 @@ diff_e2_e4_num <- pval_fact_sign %>%
 
 rm(pval_fact_sign,pval_num_sign,var)
 
-## 4.4 ## Base avec variables significative
+#4.4 Tableau de contingence 
 
-Data <- Data %>%
-  select(1:2, all_of(variables_sign_fact2), all_of(variables_sign_num2))
+var_diff_fact <- diff_e2_e4_fact$var
 
-#4.5 Tableau de contingence 
+Variable_y <- names(Data)[2]
 
 Data_fact <- Data %>% 
-  select(is.factor)
-
-Variable_y <- names(Data_fact)[1]
+  select(Variable_y,all_of(var_diff_fact))
 
 for (col in names(Data_fact)[-1]) {
   contingency_table <- table(Data_fact[[Variable_y]], Data_fact[[col]])
   print(paste("Tableau de contingence pour", Variable_y, "et", col))
   print(contingency_table)
 }
+
+## 4.5 ## Base avec variables significative
+
+Data <- Data %>%
+  select(1:2, all_of(variables_sign_fact2), all_of(variables_sign_num2))
+
 
 rm(Variable_y,col, contingency_table,Data_fact)
 
@@ -684,7 +688,7 @@ if (ncol(Data_numeric) == 0) {
   p_values <- apply(p_values, c(1, 2), as.numeric)
   p_values <- round(p_values, digits = 10)
   p_values[is.na(p_values)] <- ''
-  p_values_num <- p_values
+  p_values_num <- as.data.frame(p_values)
 }
 
 rm(p_values)
@@ -769,8 +773,20 @@ if (ncol(Data_fact) == 0) {
   p_values_fact <- apply(p_values_fact, c(1, 2), as.numeric)
   p_values_fact <- round(p_values_fact, digits = 10)
   p_values_fact[is.na(p_values_fact)] <- ''
+  p_values_fact <- as.data.frame(p_values_fact)
   }
+
+
 
 rm(Data_fact, p_values_contingency, i, j, chi_squared_result)
 
-#### 6 #### Resultat / Export 
+#### 6 Resultat / Export  #### 
+
+# chemin_export <- "C:/Users/Vito/Desktop/Dépôt Projet Statistique 2A/Projet_stat_groupe_22" #Vito
+chemin_export <- "C:/Users/nsdk1/Desktop/R/Projet_stat/Projet_stat_groupe_22" # Nathan
+
+file1 <- paste(chemin_export,"/p_values_fact_",Data_name,".xlsx", sep = "")
+write.xlsx(p_values_fact, file = file1, rowNames = TRUE)
+
+file2 <- paste(chemin_export,"/p_values_num_",Data_name,".xlsx", sep = "")
+write.xlsx(p_values_num, file = file2, rowNames = TRUE)
