@@ -17,7 +17,7 @@ library(openxlsx)
 
 # setwd("O:/Annee2/stats/Groupe22/Donnees") # Chemin VM
 # setwd("C:/Users/Vito/Desktop/Dépôt Projet Statistique 2A/1.Donnees") # mon dossier (Vito)
-setwd("C:/Users/nsdk1/Desktop/R/Projet_stat/Source") # Chemin perso Nathan
+# setwd("C:/Users/nsdk1/Desktop/R/Projet_stat/Source") # Chemin perso Nathan
 
 base_NE_BEA <- readRDS(file="base_NE_X_varY_BEA.RData")
 base_PC_BEA <- readRDS(file="base_PC_X_varY_BEA.RData")
@@ -81,14 +81,12 @@ rm(Data_fact,occurrences, seuil2)
 
 
 # Et pour les numeriques dont la variance est nulle : 
-Data_num <- Data %>% 
-  select_if(is.numeric)
 
-colonnes_numeriques <- names(Data_num)
+colonnes_numeriques <- names(Data)[sapply(Data, is.numeric)]
 var_num_a_suppr<-c()
 
 for (col in colonnes_numeriques){
-  if (var(Data_num[[col]], na.rm=TRUE) ==0) {
+  if (var(Data[[col]], na.rm=TRUE) ==0) {
     var_num_a_suppr <- c(var_num_a_suppr,col)
   }}
 
@@ -96,7 +94,7 @@ Data <- Data %>% # Filtrage
   select(-all_of(var_num_a_suppr))
 
 
-rm(var_num_a_suppr, Data_num, colonnes_numeriques)
+rm(var_num_a_suppr, colonnes_numeriques, col)
 
 
 ## 1.4 Potentiel regroupements ##
@@ -402,7 +400,8 @@ Data_fact <- Data %>%
 variable_cible <- Data_fact[,1]
 autres_variables <- Data_fact[, -1]
 variables_significatives_p <- list()
-p_val_fact_etape2<-c()
+p_val_fact_etape2<-data.frame(var= c(""),
+                              p_val_etape2=c(""))
 
 
 # Effectuez le test du chi-deux pour chaque variable 
@@ -416,73 +415,87 @@ for (i in seq_along(autres_variables)) {
     return(exact_test)
   })
   
-  p_val_fact_etape2<-c(p_val_fact_etape2,chi_squared_result$p.value)
+  nom_variable_i <- names(autres_variables)[i]
+  
+  p_val_fact_etape2<-rbind(p_val_fact_etape2,c(nom_variable_i,chi_squared_result$p.value))
   
   
   # Verifiez si la p-valeur est inferieure 0.1
   if (chi_squared_result$p.value < seuil_sign) {
-    variables_significatives_p[[names(autres_variables)[i]]] <- chi_squared_result$p.value
+    variables_significatives_p[[nom_variable_i]] <- chi_squared_result$p.value
   }
 }
 
 variables_sign_fact <- names(variables_significatives_p)
 
 #p_value
-pval_fact_sign_e2<- data.frame(var= names(autres_variables),
-                               p_val_fact_etape2=p_val_fact_etape2)
+# print(p_val_fact_etape2)
 
-rm()
-rm(Data_fact, chi_squared_result, i, variable, variable_cible, autres_variables, variables_significatives_p)
+
+rm(Data_fact, chi_squared_result, i, variable, variable_cible, autres_variables, variables_significatives_p, nom_variable_i)
 
 
 # 2.2 # Significativite variable num (Maxime)
 
-Data_num <- Data %>% 
-  select_if(is.numeric)
-# str(Data_num)
-
 colonnes_numeriques <- names(Data)[sapply(Data, is.numeric)]
 test_rate <-c()
-p_val_etape2 <- c()
+
+p_val_num_etape2 <- data.frame(var= c(""),p_val_etape2=c(""))
 
 for (var in colonnes_numeriques) {
   
-  # Perform Kruskal-Wallis test
-  kruskal_test_result <- kruskal.test(Data[[2]] ~ Data[[var]], data = Data)
-
-  p_val_etape2 <- c(p_val_etape2, kruskal_test_result$p.value)  
+  #Test de normalité
+  shapiro_test_result <- shapiro.test(Data[[var]])
   
-  if (kruskal_test_result$p.value >= seuil_sign) {
-    test_rate <- unique(c(test_rate, var))  
-
-  }
+  if (shapiro_test_result$p.value <= 0.05) {  #Perform ANOVA TEST
+    
+    anova_test_result<- aov(Data[[var]] ~ Data[[2]])
+    p_value_anova <- summary(anova_test_result)[[1]][["Pr(>F)"]][1]
+    
+    p_val_num_etape2 <- rbind(p_val_num_etape2, c(var, p_value_anova ))
+    
+    if (p_value_anova >= seuil_sign) {
+      test_rate <- unique(c(test_rate, var))  
+  }}
+  
+  else{  # Perform Kruskal-Wallis test
+    kruskal_test_result <- kruskal.test(Data[[var]] ~ Data[[2]])
+    
+    p_val_num_etape2 <- rbind(p_val_num_etape2, c(var, kruskal_test_result$p.value ))
+    
+    if (kruskal_test_result$p.value >= seuil_sign) {
+      test_rate <- unique(c(test_rate, var))  
+      
+    }}
 }
 
 variables_sign_num <- setdiff(colonnes_numeriques, test_rate)
 
 #p_value
-pval_num_sign_e2<- data.frame(var= colonnes_numeriques,
-                              p_val_etape2=p_val_etape2)
+ # print(p_val_num_etape2)
 
 
-rm(Data_num, kruskal_test_result, test_rate)
+
+rm(kruskal_test_result, test_rate, shapiro_test_result, anova_test_result, p_value_anova, var, colonnes_numeriques)
+
 
 # ### AFFICHER UN HISTOGRAMME
-# plot_data <- data.frame(X = Data[["A03_MdSeroElTgPP"]],  #On peut choisir la variable ici
-#                          Color = as.factor(Data[[2]]))
-# 
-# mu <- aggregate(X ~ Color, data = plot_data, mean)
-# #Création du graphique
-#  p <- ggplot(plot_data, aes(x = X, fill = Color)) +
-#    geom_histogram(color = "white", position = "stack", bins = 50) +
-#    labs(x = "A03_sdSeroTTg", y = "Fréquence") +
-#    geom_vline(data = mu, aes(xintercept = X, color = Color), alpha = 0.8, linetype = "dashed") +
-#    geom_text(data = mu, aes(x = X + 0.1, y = 30, label = paste("Moyenne:", round(X, 2))), color = "black", size = 3, vjust = -1) +
-#    theme_minimal()
-#  print(p)
+ # plot_data <- data.frame(X = Data[["T03_MAT_AgePo"]],  #On peut choisir la variable ici
+ #                          Color = as.factor(Data[[2]]))
+ # 
+ # mu <- aggregate(X ~ Color, data = plot_data, mean)
+ # #Création du graphique
+ #  p <- ggplot(plot_data, aes(x = X, fill = Color)) +
+ #    geom_histogram(color = "white", position = "stack", bins = 50) +
+ #    labs(x = "A03_sdSeroTTg", y = "Fréquence") +
+ #    geom_vline(data = mu, aes(xintercept = X, color = Color), alpha = 0.8, linetype = "dashed") +
+ #    geom_text(data = mu, aes(x = X + 0.1, y = 30, label = paste("Moyenne:", round(X, 2))), color = "black", size = 3, vjust = -1) +
+ #    theme_minimal()
+ #  print(p)
+
 
 ## 2.3 ## Base avec variables significative
-
+# 
 Data <- Data %>%
   select(1:2, all_of(variables_sign_fact), all_of(variables_sign_num))
 
@@ -525,7 +538,8 @@ Data_fact <- Data %>%
 variable_cible <- Data_fact[,1]
 autres_variables <- Data_fact[, -1]
 variables_significatives_p <- list()
-p_val_fact_etape4<-c()
+p_val_fact_etape4<-data.frame(var= c(""),
+                              p_val_etape4=c(""))
 
 
 # Effectuez le test du chi-deux pour chaque variable 
@@ -539,58 +553,72 @@ for (i in seq_along(autres_variables)) {
     return(exact_test)
   })
   
-  p_val_fact_etape4<-c(p_val_fact_etape4,chi_squared_result$p.value)
+  nom_variable_i <- names(autres_variables)[i]
+  p_val_fact_etape4<-rbind(p_val_fact_etape4,c(nom_variable_i,chi_squared_result$p.value))
   
   
   # Verifiez si la p-valeur est inferieure 0.1
   if (chi_squared_result$p.value < seuil_sign) {
-    variables_significatives_p[[names(autres_variables)[i]]] <- chi_squared_result$p.value
+    variables_significatives_p[[nom_variable_i]] <- chi_squared_result$p.value
   }
 }
-variables_sign_fact2 <- names(variables_significatives_p)
+
+variables_sign_fact <- names(variables_significatives_p)
 
 #p_value
-pval_fact_sign_e4<- data.frame(var= names(autres_variables),
-                               p_val_fact_etape4=p_val_fact_etape4)
+# p_val_fact_etape4
 
-pval_fact_sign <- left_join(pval_fact_sign_e4, pval_fact_sign_e2)
 
-rm(pval_fact_sign_e2,pval_fact_sign_e4,p_val_fact_etape2,p_val_fact_etape4)
-rm(Data_fact, chi_squared_result, i, variable, variable_cible, autres_variables, variables_significatives_p)
+pval_fact_sign <- full_join(p_val_fact_etape2, p_val_fact_etape4)
+
+rm(p_val_fact_etape2, p_val_fact_etape4)
+rm(Data_fact, chi_squared_result, i, variable, variable_cible, autres_variables, variables_significatives_p,nom_variable_i)
 
 
 # 4.2 # Significativite variable num (Maxime)
 
-Data_num <- Data %>% 
-  select_if(is.numeric)
-# str(Data_num)
-
-colonnes_numeriques <- names(Data_num)
+colonnes_numeriques <- names(Data)[sapply(Data, is.numeric)]
 test_rate <-c()
-p_val_etape4 <- c()
+
+p_val_num_etape4 <- data.frame(var= c(""),p_val_etape4=c(""))
 
 for (var in colonnes_numeriques) {
   
-  # Perform Kruskal-Wallis test
-  kruskal_test_result <- kruskal.test(Data[[2]] ~ Data[[var]], data = Data)
+  #Test de normalité
+  shapiro_test_result <- shapiro.test(Data[[var]])
   
-  p_val_etape4 <- c(p_val_etape4, kruskal_test_result$p.value)  
-  
-  if (kruskal_test_result$p.value >= seuil_sign) {
-    test_rate <- unique(c(test_rate, var))  
+  if (shapiro_test_result$p.value <= 0.05) {  #Perform ANOVA TEST
     
-  }
+    anova_test_result<- aov(Data[[var]] ~ Data[[2]])
+    p_value_anova <- summary(anova_test_result)[[1]][["Pr(>F)"]][1]
+    
+    p_val_num_etape4 <- rbind(p_val_num_etape4, c(var, p_value_anova ))
+    
+    if (p_value_anova >= seuil_sign) {
+      test_rate <- unique(c(test_rate, var))  
+    }}
+  
+  else{  # Perform Kruskal-Wallis test
+    kruskal_test_result <- kruskal.test(Data[[var]] ~ Data[[2]])
+    
+    p_val_num_etape4 <- rbind(p_val_num_etape4, c(var, kruskal_test_result$p.value ))
+    
+    if (kruskal_test_result$p.value >= seuil_sign) {
+      test_rate <- unique(c(test_rate, var))  
+      
+    }}
 }
 
-variables_sign_num2 <- setdiff(colonnes_numeriques, test_rate)
+variables_sign_num <- setdiff(colonnes_numeriques, test_rate)
 
 #p_value
-pval_num_sign_e4<- data.frame(var= colonnes_numeriques,
-                              p_val_etape4=p_val_etape4)
-pval_num_sign <- left_join(pval_num_sign_e4, pval_num_sign_e2)
+# p_val_num_etape4
 
-rm(pval_num_sign_e2,pval_num_sign_e4,p_val_etape2,p_val_etape4)
-rm(Data_num, kruskal_test_result, test_rate)
+
+pval_num_sign <- full_join(p_val_num_etape2, p_val_num_etape4)
+
+rm(p_val_num_etape2,p_val_num_etape4)
+rm(kruskal_test_result, test_rate, shapiro_test_result, anova_test_result, p_value_anova, var, colonnes_numeriques)
 
 ### AFFICHER UN HISTOGRAMME
 # plot_data <- data.frame(X = Data[["A05_MdTGRIPPE"]],  #On peut choisir la variable ici
