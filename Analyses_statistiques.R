@@ -17,53 +17,61 @@ library(openxlsx)
 
 ## CHARGEMENT DES DONNEES ##
 
-# setwd("O:/Annee2/stats/Groupe22/Donnees") # Chemin VM
-setwd("C:/Users/Vito/Desktop/Dépôt Projet Statistique 2A/1.Donnees") # mon dossier (Vito)
-# setwd("C:/Users/nsdk1/Desktop/R/Projet_stat/Source") # Chemin perso Nathan
+## Chemin ##
 
-base_NE_BEA <- read_excel("C:/Users/Vito/Desktop/Dépôt Projet Statistique 2A/1.Donnees/base_NE_BEA.xlsx")
-base_PC_BEA <- read_excel("C:/Users/Vito/Desktop/Dépôt Projet Statistique 2A/1.Donnees/base_PC_BEA.xlsx")
-base_Repro_BEA <- read_excel("C:/Users/Vito/Desktop/Dépôt Projet Statistique 2A/1.Donnees/base_Repro_BEA.xlsx")
+# setwd("O:/Annee2/stats/Groupe22/Donnees") # Chemin VM
+# setwd("C:/Users/Vito/Desktop/D?p?t Projet Statistique 2A/1.Donnees") # mon dossier (Vito)
+setwd("C:/Users/nsdk1/Desktop/R/Projet_stat/Source") # Chemin perso Nathan
 
 ## CHOIX DE LA BASE ## 
 
-Data <- base_NE_BEA
-Data_name <- "base_NE_BEA"
+# Data_name <- "base_NE_BEA"
 
-# Data <- base_PC_BEA
 # Data_name <- "base_PC_BEA"
 
-# Data <- base_Repro_BEA
-# Data_name <- "base_Repro_BEA"
+Data_name <- "base_Repro_BEA"
+
+## Import des bases script harmonisÃ© 1
 
 # NE
-p_values_fact <- read_excel("C:/Users/Vito/Desktop/Dépôt Projet Statistique 2A/1.Donnees/p_values_fact_base_NE_BEA.xlsx")
-p_values_num <- read_excel("C:/Users/Vito/Desktop/Dépôt Projet Statistique 2A/1.Donnees/p_values_num_base_NE_BEA.xlsx")
+if (Data_name == "base_NE_BEA") {
+  base_NE_BEA <- read_excel("base_NE_BEA.xlsx")
+p_values_fact <- read_excel("p_values_fact_base_NE_BEA.xlsx")
+p_values_num <- read_excel("p_values_num_base_NE_BEA.xlsx")
+Data <- base_NE_BEA
+}
 
-# # PC
-# p_values_fact <- read_excel("C:/Users/Vito/Desktop/Dépôt Projet Statistique 2A/Projet_stat_groupe_22/p_values_fact_base_PC_BEA.xlsx")
-# p_values_num_BEA <- read_excel("C:/Users/Vito/Desktop/Dépôt Projet Statistique 2A/Projet_stat_groupe_22/p_values_num_base_PC_BEA.xlsx")
-# 
-# # Repro
-# p_values_fact <- read_excel("C:/Users/Vito/Desktop/Dépôt Projet Statistique 2A/Projet_stat_groupe_22/p_values_fact_base_Repro_BEA.xlsx")
-# p_values_num <- read_excel("C:/Users/Vito/Desktop/Dépôt Projet Statistique 2A/Projet_stat_groupe_22/p_values_num_base_Repro_BEA.xlsx")
+# PC
+if (Data_name == "base_PC_BEA") {
+  base_PC_BEA <- read_excel("base_PC_BEA.xlsx")
+  p_values_fact <- read_excel("p_values_fact_base_PC_BEA.xlsx")
+  p_values_num_BEA <- read_excel("p_values_num_base_PC_BEA.xlsx")
+  Data <- base_PC_BEA
+}
 
-str(p_values_fact)
+# Repro
+if (Data_name == "base_Repro_BEA") {
+  base_Repro_BEA <- read_excel("base_Repro_BEA.xlsx")
+  p_values_fact <- read_excel("p_values_fact_base_Repro_BEA.xlsx")
+  p_values_num <- read_excel("p_values_num_base_Repro_BEA.xlsx")
+  Data <- base_Repro_BEA
+}
 
 
-#### 1. Compte des p-values significatives (variables factorielles)
+
+#### 2 Compte des p-values significatives ####
+
+## 2 .1 Compte des p-values significatives (variables factorielles)
 non_na_counts_fact <- rowSums(!is.na(p_values_fact[, -1])) 
 count_occurrences_fact <- data.frame(variable = p_values_fact[, 1], non_na_counts_fact = non_na_counts_fact)
 count_occurrences_fact <- count_occurrences_fact[order(-count_occurrences_fact$non_na_counts_fact), ]
-count_occurrences_fact
 
-#### 2. Compte des p-values significatives (variables numériques)
+## 2.2 Compte des p-values significatives (variables num?riques)
 non_na_counts_num <- rowSums(!is.na(p_values_num[, -1])) 
 count_occurrences_num <- data.frame(variable = p_values_num[, 1], non_na_counts_num = non_na_counts_num)
 count_occurrences_num <- count_occurrences_num[order(-count_occurrences_num$non_na_counts_num), ]
-count_occurrences_num
 
-#### 3. Data triée selon les meilleurs corrélations
+#### 3 Data tri?e selon les meilleurs corr?lations ####
 
 columns_to_keep_fact <- count_occurrences_fact[1: 20, 1]
 columns_to_keep_num <- count_occurrences_num[1: 15, 1]

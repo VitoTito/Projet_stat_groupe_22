@@ -13,12 +13,13 @@ library(factoextra)
 library(vcd)
 library(openxlsx)
 library(readxl)
+library(reshape2)
 
 ## CHARGEMENT DES DONNEES ##
 
 # setwd("O:/Annee2/stats/Groupe22/Donnees") # Chemin VM
-setwd("C:/Users/Vito/Desktop/Dépôt Projet Statistique 2A/1.Donnees") # mon dossier (Vito)
-# setwd("C:/Users/nsdk1/Desktop/R/Projet_stat/Source") # Chemin perso Nathan
+# setwd("C:/Users/Vito/Desktop/D?p?t Projet Statistique 2A/1.Donnees") # mon dossier (Vito)
+setwd("C:/Users/nsdk1/Desktop/R/Projet_stat/Source") # Chemin perso Nathan
 
 base_NE_BEA <- readRDS(file="base_NE_X_varY_BEA.RData")
 base_PC_BEA <- readRDS(file="base_PC_X_varY_BEA.RData")
@@ -28,7 +29,7 @@ base_Repro_BEA <- readRDS(file="base_Repro_X_varY_BEA.RData")
 
 Data <- base_NE_BEA
 Data_name <- "base_NE_BEA"
-# 
+
 # Data <- base_PC_BEA
 # Data_name <- "base_PC_BEA"
 
@@ -564,16 +565,17 @@ for (i in seq_along(autres_variables)) {
   }
 }
 
-variables_sign_fact <- names(variables_significatives_p)
+variables_sign_fact2 <- names(variables_significatives_p)
+
+variables_significatives_p <- as.data.frame(variables_significatives_p)
+variables_significatives_p <- melt(variables_significatives_p) # Le package reshape2 et la fonction melt hÃ©ros de la nation
 
 #p_value
-# p_val_fact_etape4
-
 
 pval_fact_sign <- full_join(p_val_fact_etape2, p_val_fact_etape4)
 
 rm(p_val_fact_etape2, p_val_fact_etape4)
-rm(Data_fact, chi_squared_result, i, variable, variable_cible, autres_variables, variables_significatives_p,nom_variable_i)
+rm(Data_fact, chi_squared_result, i, variable, variable_cible, autres_variables,nom_variable_i)
 
 
 # 4.2 # Significativite variable num (Maxime)
@@ -610,15 +612,13 @@ for (var in colonnes_numeriques) {
     }}
 }
 
-variables_sign_num <- setdiff(colonnes_numeriques, test_rate)
+variables_sign_num2 <- setdiff(colonnes_numeriques, test_rate)
 
 #p_value
-# p_val_num_etape4
-
 
 pval_num_sign <- full_join(p_val_num_etape2, p_val_num_etape4)
 
-rm(p_val_num_etape2,p_val_num_etape4)
+rm(p_val_num_etape2)
 rm(kruskal_test_result, test_rate, shapiro_test_result, anova_test_result, p_value_anova, var, colonnes_numeriques)
 
 ### AFFICHER UN HISTOGRAMME
@@ -649,7 +649,7 @@ diff_e2_e4_num<- setdiff(variables_sign_num, variables_sign_num2)
 diff_e2_e4_num <- pval_fact_sign %>%
   filter(var %in% diff_e2_e4_fact)
 
-rm(pval_fact_sign,pval_num_sign,var)
+rm(pval_fact_sign,pval_num_sign)
 
 #4.4 Tableau de contingence 
 
@@ -716,9 +716,16 @@ if (ncol(Data_numeric) == 0) {
   p_values[p_values >= 0.05] <- ''
   p_values <- apply(p_values, c(1, 2), as.numeric)
   p_values <- round(p_values, digits = 10)
-  p_values[is.na(p_values)] <- ''
+  # p_values[is.na(p_values)] <- ''
   p_values_num <- as.data.frame(p_values)
 }
+
+## Compte des p-values significatives (variables num?riques)
+non_na_counts_num <- rowSums(!is.na(p_values_num)) 
+count_occurrences_num <- data.frame(var = colnames(p_values_num), nb_var_correle = non_na_counts_num)
+count_occurrences_num <- count_occurrences_num %>% 
+   arrange(desc(nb_var_correle))
+count_occurrences_num <- left_join(count_occurrences_num, p_val_num_etape4)
 
 rm(p_values)
 rm(Data_numeric, correlation_matrix)
@@ -801,32 +808,41 @@ if (ncol(Data_fact) == 0) {
   p_values_fact[p_values_fact >= 0.05] <- ''
   p_values_fact <- apply(p_values_fact, c(1, 2), as.numeric)
   p_values_fact <- round(p_values_fact, digits = 10)
-  p_values_fact[is.na(p_values_fact)] <- ''
+  # p_values_fact[is.na(p_values_fact)] <- ''
   p_values_fact <- as.data.frame(p_values_fact)
   }
 
-
-
+## Compte des p-values significatives (variables num?riques)
+non_na_counts_fact <- rowSums(!is.na(p_values_fact)) 
+count_occurrences_fact<- data.frame(variable = colnames(p_values_fact), nb_var_correle = non_na_counts_fact)
+count_occurrences_fact<- count_occurrences_fact %>% 
+  arrange(desc(nb_var_correle))
+count_occurrences_fact <- left_join(count_occurrences_fact, variables_significatives_p)
 
 rm(Data_fact, p_values_contingency, i, j, chi_squared_result)
+rm(significant_variables,variables_significatives)
+rm(diff_e2_e4_fact, diff_e2_e4_num)
 
 #### 6 Resultat / Export  #### 
 
-#### DATA
+# chemin_export <- "C:/Users/Vito/Desktop/D?p?t Projet Statistique 2A/1.Donnees" #Vito
+chemin_export <- "C:/Users/nsdk1/Desktop/R/Projet_stat/Projet_stat_groupe_22" # Nathan
 
-chemin_export <- "C:/Users/Vito/Desktop/Dépôt Projet Statistique 2A/1.Donnees" #Vito
-# chemin_export <- "C:/Users/nsdk1/Desktop/R/Projet_stat/Projet_stat_groupe_22" # Nathan
+## DATA
 
-file1 <- paste(chemin_export,"/",Data_name,".xlsx", sep = "")
-write.xlsx(Data, file = file1, rowNames = TRUE)
+file5 <- paste(chemin_export,"/",Data_name,".xlsx", sep = "")
+write.xlsx(Data, file = file5, rowNames = TRUE)
 
-chemin_export <- "C:/Users/Vito/Desktop/Dépôt Projet Statistique 2A/1.Donnees" #Vito
-# chemin_export <- "C:/Users/nsdk1/Desktop/R/Projet_stat/Projet_stat_groupe_22" # Nathan
+## VARIABLES
 
-#### VARIABLES
+# file1 <- paste(chemin_export,"/p_values_fact_",Data_name,".xlsx", sep = "")
+# write.xlsx(p_values_fact, file = file1, rowNames = TRUE)
+# 
+# file2 <- paste(chemin_export,"/p_values_num_",Data_name,".xlsx", sep = "")
+# write.xlsx(p_values_num, file = file2, rowNames = TRUE)
 
-file1 <- paste(chemin_export,"/p_values_fact_",Data_name,".xlsx", sep = "")
-write.xlsx(p_values_fact, file = file1, rowNames = TRUE)
+file3 <- paste(chemin_export,"/count_occurrences_num_",Data_name,".xlsx", sep = "")
+write.xlsx(count_occurrences_num, file = file3, rowNames = TRUE)
 
-file2 <- paste(chemin_export,"/p_values_num_",Data_name,".xlsx", sep = "")
-write.xlsx(p_values_num, file = file2, rowNames = TRUE)
+file4 <- paste(chemin_export,"/count_occurrences_fact_",Data_name,".xlsx", sep = "")
+write.xlsx(count_occurrences_fact, file = file4, rowNames = TRUE)
