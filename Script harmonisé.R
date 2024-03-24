@@ -807,12 +807,23 @@ if (ncol(Data_fact) == 0) {
 
 
 
+
 rm(Data_fact, p_values_contingency, i, j, chi_squared_result)
 
 #### 6 Resultat / Export  #### 
 
-chemin_export <- "C:/Users/Vito/Desktop/Dépôt Projet Statistique 2A/Projet_stat_groupe_22" #Vito
+#### DATA
+
+chemin_export <- "C:/Users/Vito/Desktop/Dépôt Projet Statistique 2A/1.Donnees" #Vito
 # chemin_export <- "C:/Users/nsdk1/Desktop/R/Projet_stat/Projet_stat_groupe_22" # Nathan
+
+file1 <- paste(chemin_export,"/",Data_name,".xlsx", sep = "")
+write.xlsx(Data, file = file1, rowNames = TRUE)
+
+chemin_export <- "C:/Users/Vito/Desktop/Dépôt Projet Statistique 2A/1.Donnees" #Vito
+# chemin_export <- "C:/Users/nsdk1/Desktop/R/Projet_stat/Projet_stat_groupe_22" # Nathan
+
+#### VARIABLES
 
 file1 <- paste(chemin_export,"/p_values_fact_",Data_name,".xlsx", sep = "")
 write.xlsx(p_values_fact, file = file1, rowNames = TRUE)

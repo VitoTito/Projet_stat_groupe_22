@@ -21,9 +21,9 @@ library(openxlsx)
 setwd("C:/Users/Vito/Desktop/Dépôt Projet Statistique 2A/1.Donnees") # mon dossier (Vito)
 # setwd("C:/Users/nsdk1/Desktop/R/Projet_stat/Source") # Chemin perso Nathan
 
-base_NE_BEA <- readRDS(file="base_NE_X_varY_BEA.RData")
-base_PC_BEA <- readRDS(file="base_PC_X_varY_BEA.RData")
-base_Repro_BEA <- readRDS(file="base_Repro_X_varY_BEA.RData")
+base_NE_BEA <- read_excel("C:/Users/Vito/Desktop/Dépôt Projet Statistique 2A/1.Donnees/base_NE_BEA.xlsx")
+base_PC_BEA <- read_excel("C:/Users/Vito/Desktop/Dépôt Projet Statistique 2A/1.Donnees/base_PC_BEA.xlsx")
+base_Repro_BEA <- read_excel("C:/Users/Vito/Desktop/Dépôt Projet Statistique 2A/1.Donnees/base_Repro_BEA.xlsx")
 
 ## CHOIX DE LA BASE ## 
 
@@ -36,13 +36,11 @@ Data_name <- "base_NE_BEA"
 # Data <- base_Repro_BEA
 # Data_name <- "base_Repro_BEA"
 
-setwd("C:/Users/Vito/Desktop/Dépôt Projet Statistique 2A/Projet_stat_groupe_22")
+# NE
+p_values_fact <- read_excel("C:/Users/Vito/Desktop/Dépôt Projet Statistique 2A/1.Donnees/p_values_fact_base_NE_BEA.xlsx")
+p_values_num <- read_excel("C:/Users/Vito/Desktop/Dépôt Projet Statistique 2A/1.Donnees/p_values_num_base_NE_BEA.xlsx")
 
-
-p_values_fact <- read_excel("C:/Users/Vito/Desktop/Dépôt Projet Statistique 2A/Projet_stat_groupe_22/p_values_fact_base_NE_BEA.xlsx")
-p_values_num <- read_excel("C:/Users/Vito/Desktop/Dépôt Projet Statistique 2A/Projet_stat_groupe_22/p_values_num_base_NE_BEA.xlsx")
-
-# # BEA
+# # PC
 # p_values_fact <- read_excel("C:/Users/Vito/Desktop/Dépôt Projet Statistique 2A/Projet_stat_groupe_22/p_values_fact_base_PC_BEA.xlsx")
 # p_values_num_BEA <- read_excel("C:/Users/Vito/Desktop/Dépôt Projet Statistique 2A/Projet_stat_groupe_22/p_values_num_base_PC_BEA.xlsx")
 # 
@@ -52,13 +50,38 @@ p_values_num <- read_excel("C:/Users/Vito/Desktop/Dépôt Projet Statistique 2A/Pr
 
 str(p_values_fact)
 
+
+#### 1. Compte des p-values significatives (variables factorielles)
 non_na_counts_fact <- rowSums(!is.na(p_values_fact[, -1])) 
 count_occurrences_fact <- data.frame(variable = p_values_fact[, 1], non_na_counts_fact = non_na_counts_fact)
 count_occurrences_fact <- count_occurrences_fact[order(-count_occurrences_fact$non_na_counts_fact), ]
 count_occurrences_fact
 
+#### 2. Compte des p-values significatives (variables numériques)
 non_na_counts_num <- rowSums(!is.na(p_values_num[, -1])) 
-count_occurrences_num <- data.frame(variable = p_values_num[, 1], non_na_count = non_na_counts_num)
-count_occurrences <- count_occurrences[order(-count_occurrences$non_na_counts_num), ]
-count_occurrences
+count_occurrences_num <- data.frame(variable = p_values_num[, 1], non_na_counts_num = non_na_counts_num)
+count_occurrences_num <- count_occurrences_num[order(-count_occurrences_num$non_na_counts_num), ]
+count_occurrences_num
 
+#### 3. Data triée selon les meilleurs corrélations
+
+columns_to_keep_fact <- count_occurrences_fact[1: 20, 1]
+columns_to_keep_num <- count_occurrences_num[1: 15, 1]
+
+Data_filtered_fact <- Data[, colnames(Data) %in% columns_to_keep_fact ]
+Data_filtered_fact <- lapply(Data_filtered_fact, factor)
+Data_filtered_num <- Data[, colnames(Data) %in% columns_to_keep_num ]
+Data_filtered_num_list <- list(Data_filtered_num)
+
+dudiY <- dudi.pca(Data_filtered_num, center = TRUE,scale = TRUE, scannf = FALSE)
+ktabX.data <- ktab.list.df(Data_filtered_num_list)
+
+resmbpls <- mbpls(dudiY, ktabX.data, scale = TRUE, option = "uniform", scannf = FALSE)
+summary(resmbpls)
+plot(resmbpls)
+
+test <- testdim(resmbpcaiv, nrepet = 10)
+plot(test)
+
+test <- randboot(resmbpcaiv, optdim = 4, nrepet = 10)
+plot(test$bipc)
