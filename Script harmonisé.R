@@ -27,14 +27,14 @@ base_Repro_BEA <- readRDS(file="base_Repro_X_varY_BEA.RData")
 
 ## CHOIX DE LA BASE ## 
 
-Data <- base_NE_BEA
-Data_name <- "base_NE_BEA"
+# Data <- base_NE_BEA
+# Data_name <- "base_NE_BEA"
 
 # Data <- base_PC_BEA
 # Data_name <- "base_PC_BEA"
 
-# Data <- base_Repro_BEA
-# Data_name <- "base_Repro_BEA"
+Data <- base_Repro_BEA
+Data_name <- "base_Repro_BEA"
 
 ##### Etape 1 : Verification donnees #####
 
@@ -449,16 +449,16 @@ for (var in colonnes_numeriques) {
   #Test de normalité
   shapiro_test_result <- shapiro.test(Data[[var]])
   
-  if (shapiro_test_result$p.value <= 0.05) {  #Perform ANOVA TEST
+  if (shapiro_test_result$p.value >= 0.05) {  #Perform ANOVA TEST
     
     anova_test_result<- aov(Data[[var]] ~ Data[[2]])
     p_value_anova <- summary(anova_test_result)[[1]][["Pr(>F)"]][1]
     
     p_val_num_etape2 <- rbind(p_val_num_etape2, c(var, p_value_anova ))
     
-    if (p_value_anova >= seuil_sign) {
+    if (p_value_anova >= seuil_sign) { #Pour NE les 4 variables "normal" passent le test
       test_rate <- unique(c(test_rate, var))  
-  }}
+    }}
   
   else{  # Perform Kruskal-Wallis test
     kruskal_test_result <- kruskal.test(Data[[var]] ~ Data[[2]])
@@ -472,11 +472,6 @@ for (var in colonnes_numeriques) {
 }
 
 variables_sign_num <- setdiff(colonnes_numeriques, test_rate)
-
-#p_value
- # print(p_val_num_etape2)
-
-
 
 rm(kruskal_test_result, test_rate, shapiro_test_result, anova_test_result, p_value_anova, var, colonnes_numeriques)
 
@@ -590,7 +585,7 @@ for (var in colonnes_numeriques) {
   #Test de normalité
   shapiro_test_result <- shapiro.test(Data[[var]])
   
-  if (shapiro_test_result$p.value <= 0.05) {  #Perform ANOVA TEST
+  if (shapiro_test_result$p.value >= 0.05) {  #Perform ANOVA TEST
     
     anova_test_result<- aov(Data[[var]] ~ Data[[2]])
     p_value_anova <- summary(anova_test_result)[[1]][["Pr(>F)"]][1]
@@ -675,7 +670,7 @@ Data <- Data %>%
 rm(Variable_y,col, contingency_table,Data_fact)
 
 
-#### Etape 5 : Etude des corrélations entre les variables X retenues à p<0.1 (?) ####
+#### Etape 5 : Etude des corrélations entre les variables X retenues à p<0.1 (?) 
 #### 5.1 Numérique ####
 
 Data_numeric <- Data %>%
@@ -835,11 +830,11 @@ write.xlsx(Data, file = file5, rowNames = TRUE)
 
 ## VARIABLES
 
-# file1 <- paste(chemin_export,"/p_values_fact_",Data_name,".xlsx", sep = "")
-# write.xlsx(p_values_fact, file = file1, rowNames = TRUE)
-# 
-# file2 <- paste(chemin_export,"/p_values_num_",Data_name,".xlsx", sep = "")
-# write.xlsx(p_values_num, file = file2, rowNames = TRUE)
+file1 <- paste(chemin_export,"/p_values_fact_",Data_name,".xlsx", sep = "")
+write.xlsx(p_values_fact, file = file1, rowNames = TRUE)
+
+file2 <- paste(chemin_export,"/p_values_num_",Data_name,".xlsx", sep = "")
+write.xlsx(p_values_num, file = file2, rowNames = TRUE)
 
 file3 <- paste(chemin_export,"/count_occurrences_num_",Data_name,".xlsx", sep = "")
 write.xlsx(count_occurrences_num, file = file3, rowNames = TRUE)
